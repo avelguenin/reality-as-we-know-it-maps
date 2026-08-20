@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concept map — Reality as we know it</title>
+<style>
+  :root { color-scheme: light dark; }
+  .viz-root {
+    color-scheme: light;
+    --surface-1: #fcfcfb; --page: #f9f9f7;
+    --ink-1: #0b0b0b; --ink-2: #52514e; --ink-3: #898781;
+    --grid: #e1e0d9; --baseline: #c3c2b7; --ring: rgba(11,11,11,0.10);
+    --ch-0: #2a78d6; --ch-1: #eb6834; --ch-2: #1baf7a; --ch-3: #eda100;
+    --ch-4: #e87ba4; --ch-5: #008300; --ch-6: #4a3aa7;
+    --e-grounds: #2a78d6; --e-formalizes: #4a3aa7; --e-kind_of: #898781;
+    --e-part_of: #898781; --e-emerges_from: #1baf7a; --e-enables: #b97e00;
+    --e-contrasts_with: #e34948; --e-applies_to: #e87ba4;
+    --e-supports: #2a78d6; --e-opposes: #e34948; --e-qualifies: #b97e00;
+    --e-presupposes: #898781; --e-synthesizes: #4a3aa7;
+    --panel-bg: #ffffff; --zone: rgba(137,135,129,0.10);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --surface-1: #1a1a19; --page: #0d0d0d;
+      --ink-1: #ffffff; --ink-2: #c3c2b7; --ink-3: #898781;
+      --grid: #2c2c2a; --baseline: #383835; --ring: rgba(255,255,255,0.10);
+      --ch-0: #3987e5; --ch-1: #d95926; --ch-2: #199e70; --ch-3: #c98500;
+      --ch-4: #d55181; --ch-5: #008300; --ch-6: #9085e9;
+      --e-grounds: #3987e5; --e-formalizes: #9085e9; --e-kind_of: #898781;
+      --e-part_of: #898781; --e-emerges_from: #199e70; --e-enables: #c98500;
+      --e-contrasts_with: #e66767; --e-applies_to: #d55181;
+      --e-supports: #3987e5; --e-opposes: #e66767; --e-qualifies: #c98500;
+      --e-presupposes: #898781; --e-synthesizes: #9085e9;
+      --panel-bg: #232322; --zone: rgba(137,135,129,0.13);
+    }
+  }
+  :root[data-theme="dark"] .viz-root {
+    color-scheme: dark;
+    --surface-1: #1a1a19; --page: #0d0d0d;
+    --ink-1: #ffffff; --ink-2: #c3c2b7; --ink-3: #898781;
+    --grid: #2c2c2a; --baseline: #383835; --ring: rgba(255,255,255,0.10);
+    --ch-0: #3987e5; --ch-1: #d95926; --ch-2: #199e70; --ch-3: #c98500;
+    --ch-4: #d55181; --ch-5: #008300; --ch-6: #9085e9;
+    --e-grounds: #3987e5; --e-formalizes: #9085e9; --e-kind_of: #898781;
+    --e-part_of: #898781; --e-emerges_from: #199e70; --e-enables: #c98500;
+    --e-contrasts_with: #e66767; --e-applies_to: #d55181;
+    --e-supports: #3987e5; --e-opposes: #e66767; --e-qualifies: #c98500;
+    --e-presupposes: #898781; --e-synthesizes: #9085e9;
+    --panel-bg: #232322; --zone: rgba(137,135,129,0.13);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .viz-root { background: var(--page); color: var(--ink-1); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+  header { padding: 12px 20px 9px; border-bottom: 1px solid var(--grid); background: var(--surface-1); z-index: 5; }
+  header h1 { font-size: 17px; font-weight: 700; }
+  header p { font-size: 12px; color: var(--ink-2); margin-top: 2px; }
+  .toolbar { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; margin-top: 9px; }
+  .toolbar button, .toolbar input[type=search] {
+    font: inherit; font-size: 12px; padding: 5px 11px; border-radius: 7px;
+    border: 1px solid var(--ring); background: var(--page); color: var(--ink-1); cursor: pointer;
+  }
+  .toolbar button:hover { border-color: var(--ink-3); }
+  .toolbar button.on { border-color: var(--ink-1); font-weight: 700; }
+  .toolbar input[type=search] { width: 170px; cursor: text; }
+  .toolbar .sep { width: 1px; height: 20px; background: var(--grid); }
+  .thermo { display: inline-flex; align-items: center; gap: 6px; padding: 2px 4px; }
+  .thermo input[type=range] { width: 110px; cursor: pointer; }
+  .thermo .tlabel { font-size: 11.5px; color: var(--ink-2); min-width: 62px; display: inline-block; }
+  .hint { font-size: 11px; color: var(--ink-3); margin-left: auto; max-width: 460px; text-align: right; }
+  /* ---- columns view ---- */
+  #cols { position: relative; }
+  #cols svg { position: absolute; top: 0; left: 0; overflow: visible; pointer-events: none; }
+  #cols path.edge { fill: none; stroke-width: 1.5; opacity: 0.45; transition: opacity .12s, stroke-width .12s; }
+  #cols.faded path.edge { opacity: 0.05; }
+  #cols path.edge.hl { opacity: 1 !important; stroke-width: 2.4; }
+  #cols path.edge.hhl { opacity: 1 !important; stroke-width: 2.6; }
+  #cols.hovering path.edge:not(.hhl):not(.hl) { opacity: 0.12; }
+  .chapter-head {
+    position: absolute; font-size: 12px; font-weight: 700; color: var(--ink-1);
+    padding: 7px 10px; border-radius: 8px; background: var(--surface-1);
+    border: 1px solid var(--ring); border-top: 3px solid var(--chc);
+    cursor: pointer; user-select: none; display: flex; gap: 8px; align-items: center;
+  }
+  .chapter-head .count { font-weight: 400; font-size: 11px; color: var(--ink-2); }
+  .chapter-head:hover { border-color: var(--ink-3); }
+  .cnode {
+    position: absolute; background: var(--surface-1); border: 1px solid var(--ring);
+    border-left: 4px solid var(--chc); border-radius: 8px; padding: 7px 10px 6px;
+    font-size: 11.5px; line-height: 1.35; color: var(--ink-1); cursor: pointer;
+    transition: opacity .15s, box-shadow .15s; user-select: none;
+  }
+  .cnode:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.18); }
+  .cnode.dim { opacity: 0.15; }
+  .cnode.sel { outline: 2px solid var(--chc); outline-offset: 1px; }
+  .cnode.match { outline: 2px dashed var(--ink-1); outline-offset: 1px; }
+  .cnode .meta { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+  .cnode .kind { font-size: 9px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-2); }
+  .cnode .dots { font-size: 8px; letter-spacing: 1.5px; color: var(--chc); }
+  .cnode .grp { font-size: 9.5px; color: var(--ink-3); margin-top: 3px; }
+  .cnode.t1 { font-weight: 700; font-size: 12.5px; border-left-width: 6px; }
+  .cnode.t1 .kind { color: var(--chc); }
+  .main { flex: 1; position: relative; overflow: hidden; }
+  #canvas { position: absolute; inset: 0; cursor: grab; overflow: hidden; }
+  #canvas.panning { cursor: grabbing; }
+  #world { position: absolute; transform-origin: 0 0; }
+  svg#scene { display: block; overflow: visible; }
+  .zone { fill: var(--zone); stroke: none; }
+  .zone-label { font-size: 15px; font-weight: 700; fill: var(--ink-3); opacity: 0.85; letter-spacing: .04em; text-transform: uppercase; }
+  path.edge { fill: none; stroke-width: 1.5; opacity: 0.42; transition: opacity .12s, stroke-width .12s; }
+  g.faded path.edge { opacity: 0.05; }
+  path.edge.hl { opacity: 1 !important; stroke-width: 2.6; }
+  path.edge.hhl { opacity: 1 !important; stroke-width: 2.8; }
+  g.hovering path.edge:not(.hhl):not(.hl) { opacity: 0.12; }
+  .e-grounds { stroke: var(--e-grounds); } .m-grounds path { fill: var(--e-grounds); }
+  .e-formalizes { stroke: var(--e-formalizes); } .m-formalizes path { fill: var(--e-formalizes); }
+  .e-kind_of { stroke: var(--e-kind_of); } .m-kind_of path { fill: var(--e-kind_of); }
+  .e-part_of { stroke: var(--e-part_of); } .m-part_of path { fill: var(--e-part_of); }
+  .e-emerges_from { stroke: var(--e-emerges_from); } .m-emerges_from path { fill: var(--e-emerges_from); }
+  .e-enables { stroke: var(--e-enables); } .m-enables path { fill: var(--e-enables); }
+  .e-contrasts_with { stroke: var(--e-contrasts_with); } .m-contrasts_with path { fill: var(--e-contrasts_with); }
+  .e-applies_to { stroke: var(--e-applies_to); } .m-applies_to path { fill: var(--e-applies_to); }
+  g.node { cursor: grab; }
+  g.node.dragging { cursor: grabbing; }
+  g.node circle.c { stroke: var(--surface-1); stroke-width: 2; }
+  g.node.t2 circle.c { fill-opacity: 0.62; }
+  g.node.t3 circle.c { fill-opacity: 0.38; }
+  g.node circle.pinring { fill: none; stroke: var(--ink-1); stroke-width: 1.5; stroke-dasharray: 3 3; }
+  g.node text { fill: var(--ink-1); font-size: 10.5px; text-anchor: middle; pointer-events: none; }
+  g.node text.big { font-size: 12.5px; font-weight: 700; }
+  g.node.dim { opacity: 0.13; }
+  g.node.sel circle.c { stroke: var(--ink-1); stroke-width: 3; }
+  g.node.match circle.c { stroke: var(--ink-1); stroke-dasharray: 4 3; stroke-width: 3; }
+  .legend {
+    position: absolute; left: 12px; bottom: 12px; background: var(--panel-bg);
+    border: 1px solid var(--ring); border-radius: 10px; padding: 10px 12px; font-size: 11px;
+    color: var(--ink-2); max-width: 320px; box-shadow: 0 3px 14px rgba(0,0,0,0.12); z-index: 4;
+    max-height: 52vh; overflow-y: auto;
+  }
+  .legend h3 { font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); margin: 6px 0 4px; }
+  .legend h3:first-child { margin-top: 0; }
+  .legend .row { display: flex; align-items: center; gap: 7px; margin: 2px 0; }
+  .legend .sw { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .legend svg { flex: none; }
+  #panel {
+    position: absolute; right: 0; top: 0; bottom: 0; width: 340px; max-width: 85vw;
+    background: var(--panel-bg); border-left: 1px solid var(--grid); padding: 16px;
+    overflow-y: auto; transform: translateX(100%); transition: transform .2s; z-index: 6;
+    font-size: 13px; line-height: 1.5;
+  }
+  #panel.open { transform: none; }
+  #panel .close { float: right; border: none; background: none; font-size: 18px; color: var(--ink-3); cursor: pointer; }
+  #panel .chap { font-size: 11px; font-weight: 700; color: var(--pc); text-transform: uppercase; letter-spacing: .05em; }
+  #panel h2 { font-size: 16px; margin: 6px 0 10px; }
+  #panel .gloss { margin-bottom: 10px; }
+  #panel .app { font-size: 12px; color: var(--ink-2); border-left: 3px solid var(--grid); padding-left: 9px; margin-bottom: 12px; }
+  #panel h4 { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); margin: 12px 0 5px; }
+  #panel .rel { display: block; font-size: 12px; margin: 3px 0; color: var(--ink-1); cursor: pointer; }
+  #panel .rel:hover { text-decoration: underline; }
+  #panel .rel .rt { font-size: 10px; font-weight: 700; text-transform: uppercase; margin-right: 5px; }
+  #panel .badge { display: inline-block; font-size: 10px; padding: 1px 7px; border-radius: 99px; border: 1px solid var(--ring); color: var(--ink-2); margin-right: 5px; margin-bottom: 3px; }
+  #tooltip {
+    position: fixed; z-index: 20; max-width: 290px; pointer-events: none;
+    background: var(--panel-bg); color: var(--ink-1); border: 1px solid var(--ring);
+    border-radius: 9px; padding: 9px 11px; font-size: 12px; line-height: 1.45;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18); display: none;
+  }
+  #tooltip .tt-label { font-weight: 700; margin-bottom: 3px; }
+  #tooltip .tt-kicker { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--ttc, var(--ink-3)); margin-bottom: 2px; }
+  #tooltip .tt-more { font-size: 10.5px; color: var(--ink-3); margin-top: 5px; }
+  .credits {
+    position: absolute; right: 12px; bottom: 12px; z-index: 4;
+    background: var(--panel-bg); border: 1px solid var(--ring); border-radius: 9px;
+    padding: 7px 11px; font-size: 10.5px; line-height: 1.5; color: var(--ink-3);
+    max-width: 340px; box-shadow: 0 3px 14px rgba(0,0,0,0.10);
+  }
+  .credits strong { color: var(--ink-2); font-weight: 600; }
+  .static .toolbar, .static .hint { display: none; }
+  @media print { .toolbar, .hint, #panel, #tooltip { display: none !important; } .viz-root { height: auto; overflow: visible; } .main { overflow: visible; } }
+</style>
+</head>
+<body>
+<div class="viz-root" id="root">
+  <header>
+    <h1 id="title"></h1>
+    <p id="subtitle"></p>
+    <div class="toolbar">
+      <button id="btn-view-net">Network</button>
+      <button id="btn-view-cols">Chapter columns</button>
+      <span class="sep"></span>
+      <button id="btn-t1">Core</button>
+      <button id="btn-t2">+ Supporting</button>
+      <button id="btn-t3">All concepts</button>
+      <span class="sep"></span>
+      <span id="net-controls">
+        <button id="btn-regen">⟳ Regenerate layout</button>
+        <span class="thermo" title="Temperature: thermal agitation of the layout — also scatters ⟳ regeneration">
+          <input type="range" id="temp" min="0" max="100" value="0">
+          <span class="tlabel" id="temp-label"></span>
+        </span>
+      </span>
+      <button id="btn-fit">Fit</button>
+      <button id="btn-theme">◐ Theme</button>
+      <span class="sep"></span>
+      <input type="search" id="search" placeholder="Search concepts…">
+      <span class="hint" id="hint"></span>
+    </div>
+  </header>
+  <div class="main">
+    <div id="canvas"><div id="world">
+      <div id="cols" style="display:none"><svg id="colsvg"></svg><div id="colnodes"></div></div>
+      <svg id="scene"></svg>
+    </div></div>
+    <div class="legend" id="legend"></div>
+    <aside id="panel"></aside>
+    <div class="credits">Maps and code generated by <strong>Claude</strong> (Anthropic), model identifier <strong>claude-fable-5</strong>, on 20 Aug 2026 · Source: <strong>“Reality as we know it: Active Inference, contextuality and the common ground of socio-material practices”, Avel Guénin–Carlut</strong> · Argument and concept structures are an analytical reconstruction of the text and were reviewed against it, not authored by the dissertation’s author.</div>
+  </div>
+  <div id="tooltip"></div>
+</div>
+<script>
+// ---- Shared live force-directed engine (deterministic seed + regenerate) ----
+function mulberry32(a) {
+  return function() {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    var t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+function ForceSim(cfg) {
+  // cfg: {W, H, anchor(node)->{x,y,k}, linkDist(a,b), repulsion, collidePad, bounds}
+  this.cfg = cfg;
+  this.nodes = []; this.links = [];
+  this.alpha = 0; this.seed = 42;
+  this.temperature = 0; // 0..1 — thermal agitation of the layout
+}
+ForceSim.prototype.setData = function(nodes, links, keepPositions) {
+  const prev = {};
+  if (keepPositions) this.nodes.forEach(n => prev[n.id] = n);
+  this.nodes = nodes; this.links = links;
+  const rnd = mulberry32(this.seed);
+  nodes.forEach((n, i) => {
+    const p = prev[n.id];
+    if (p) { n.x = p.x; n.y = p.y; n.vx = p.vx || 0; n.vy = p.vy || 0; return; }
+    const a = this.cfg.anchor(n);
+    const ang = rnd() * Math.PI * 2, r = 40 + rnd() * 160;
+    n.x = a.x + Math.cos(ang) * r; n.y = a.y + Math.sin(ang) * r;
+    n.vx = 0; n.vy = 0;
+  });
+  this.alpha = 1;
+};
+ForceSim.prototype.reseed = function(seed) {
+  this.seed = seed;
+  const rnd = mulberry32(seed);
+  const spread = 1 + 3.2 * this.temperature; // hotter regeneration scatters further
+  this.nodes.forEach(n => {
+    const a = this.cfg.anchor(n);
+    const ang = rnd() * Math.PI * 2, r = (40 + rnd() * 160) * spread;
+    n.x = Math.max(70, Math.min(this.cfg.W - 70, a.x + Math.cos(ang) * r));
+    n.y = Math.max(56, Math.min(this.cfg.H - 56, a.y + Math.sin(ang) * r));
+    n.vx = 0; n.vy = 0; delete n.fx; delete n.fy;
+  });
+  this.alpha = 1;
+};
+ForceSim.prototype.tick = function() {
+  const cfg = this.cfg, nodes = this.nodes, links = this.links, alpha = this.alpha;
+  const T = this.temperature;
+  // Heat melts the structure in stages: gravity (the "crystal lattice") fades first,
+  // so hot layouts flow while link topology still binds clusters; above T≈0.8 the
+  // springs themselves collapse — the topological structure genuinely breaks down
+  // and the graph becomes a gas of repulsing particles (true "plasma").
+  const gravityMelt = T >= 0.85 ? 0 : Math.max(0.05, 1 - 1.1 * T);
+  const springMelt = Math.max(0.05, 1 - 0.5 * T - (T > 0.78 ? (T - 0.78) * 6 : 0));
+  const damp = Math.min(0.90, 0.42 + 0.55 * T);
+  const rep = cfg.repulsion || 8200;
+  for (let i = 0; i < nodes.length; i++) {
+    const a = nodes[i];
+    for (let j = i + 1; j < nodes.length; j++) {
+      const b = nodes[j];
+      let dx = b.x - a.x, dy = b.y - a.y;
+      let d2 = dx * dx + dy * dy || 1;
+      if (d2 > 250000) continue; // cutoff 500px
+      let d = Math.sqrt(d2);
+      const f = rep / d2 * alpha;
+      dx /= d; dy /= d;
+      a.vx -= dx * f; a.vy -= dy * f; b.vx += dx * f; b.vy += dy * f;
+      const min = a.r + b.r + (cfg.collidePad || 54);
+      if (d < min) { const push = (min - d) * 0.30; a.vx -= dx * push; a.vy -= dy * push; b.vx += dx * push; b.vy += dy * push; }
+    }
+  }
+  links.forEach(l => {
+    const a = l._s, b = l._t;
+    let dx = b.x - a.x, dy = b.y - a.y;
+    const d = Math.sqrt(dx * dx + dy * dy) || 1;
+    const target = cfg.linkDist(a, b);
+    const f = (d - target) * 0.02 * alpha * 3 * springMelt;
+    dx /= d; dy /= d;
+    a.vx += dx * f; a.vy += dy * f;
+    b.vx -= dx * f; b.vy -= dy * f;
+  });
+  nodes.forEach(n => {
+    const a = cfg.anchor(n);
+    const k = (a.k || 1) * 0.028 * alpha * 3 * gravityMelt;
+    n.vx += (a.x - n.x) * k; n.vy += (a.y - n.y) * k;
+  });
+  // Thermal kicks go into velocity (not position), so hot motion reads as fluid
+  // drift rather than pixel shiver; quadratic in T so low temperatures stay gentle.
+  const jitter = T > 0 ? T * T * 30 : 0;
+  const cap = 18 + T * 26;
+  nodes.forEach(n => {
+    if (n.fx != null) { n.x = n.fx; n.y = n.fy; n.vx = 0; n.vy = 0; return; }
+    if (jitter) {
+      n.vx += (Math.random() - 0.5) * jitter;
+      n.vy += (Math.random() - 0.5) * jitter;
+    }
+    n.x += Math.max(-cap, Math.min(cap, n.vx));
+    n.y += Math.max(-cap, Math.min(cap, n.vy));
+    n.vx *= damp; n.vy *= damp;
+    n.x = Math.max(70, Math.min(cfg.W - 70, n.x));
+    n.y = Math.max(56, Math.min(cfg.H - 56, n.y));
+  });
+  this.alpha *= 0.986;
+  // heat keeps the simulation alive
+  if (T > 0.003) this.alpha = Math.max(this.alpha, 0.06 + 0.5 * T);
+};
+ForceSim.prototype.settle = function(iters) {
+  this.alpha = 1;
+  for (let i = 0; i < iters; i++) this.tick();
+  this.alpha = 0;
+};
+
+function hullPath(points, pad) {
+  if (!points.length) return '';
+  if (points.length < 3) {
+    const cx = points.reduce((s, p) => s + p[0], 0) / points.length;
+    const cy = points.reduce((s, p) => s + p[1], 0) / points.length;
+    const r = pad + (points.length === 2 ? Math.hypot(points[0][0] - points[1][0], points[0][1] - points[1][1]) / 2 : 0);
+    return `M${cx - r},${cy} a${r},${r} 0 1,0 ${r * 2},0 a${r},${r} 0 1,0 ${-r * 2},0`;
+  }
+  const pts = points.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const lower = []; for (const p of pts) { while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) lower.pop(); lower.push(p); }
+  const upper = []; for (const p of pts.slice().reverse()) { while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) upper.pop(); upper.push(p); }
+  const h = lower.slice(0, -1).concat(upper.slice(0, -1));
+  const cx = h.reduce((s, p) => s + p[0], 0) / h.length, cy = h.reduce((s, p) => s + p[1], 0) / h.length;
+  const ex = h.map(p => { const dx = p[0] - cx, dy = p[1] - cy; const d = Math.hypot(dx, dy) || 1; return [p[0] + dx / d * pad, p[1] + dy / d * pad]; });
+  return 'M' + ex.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' L') + ' Z';
+}
+
+function wrapText(text, pxWidth) {
+  const words = String(text).split(' '); const lines = []; let cur = '';
+  words.forEach(w => {
+    if ((cur + ' ' + w).trim().length * 6 > pxWidth && cur) { lines.push(cur); cur = w; }
+    else cur = (cur + ' ' + w).trim();
+  });
+  if (cur) lines.push(cur);
+  return lines.slice(0, 4);
+}
+
+// Temperature slider: binds an <input type=range> (0..100) + label element to a sim.
+function bindThermo(rangeEl, labelEl, sim) {
+  // Labels track the *physics*: warm = breathing, hot = clusters deform but hold,
+  // molten = gravity ~gone and clusters flow (topology still binds), plasma = the
+  // springs themselves have collapsed and topological structure truly breaks down.
+  const stops = [
+    [0, '🧊', 'frozen', '#2a78d6'],
+    [1, '❄️', 'cold', '#2a78d6'],
+    [30, '🌡️', 'warm', '#eda100'],
+    [55, '🔥', 'hot', '#eb6834'],
+    [80, '🫠', 'molten', '#e34948'],
+    [93, '🌋', 'plasma', '#4a3aa7'],
+  ];
+  const update = () => {
+    const v = +rangeEl.value;
+    sim.temperature = Math.pow(v / 100, 2); // quadratic: generous usable low range
+    let s = stops[0];
+    for (const st of stops) if (v >= st[0]) s = st;
+    labelEl.textContent = s[1] + ' ' + s[2];
+    rangeEl.style.accentColor = s[3];
+    if (sim.temperature > 0.003) sim.alpha = Math.max(sim.alpha, 0.1);
+  };
+  rangeEl.addEventListener('input', update);
+  update();
+}
+
+// Pan/zoom helper over a #canvas > #world pair. Returns view object.
+function makePanZoom(canvas, world, isNodeTarget) {
+  const view = { x: 0, y: 0, k: 1 };
+  const apply = () => { world.style.transform = `translate(${view.x}px,${view.y}px) scale(${view.k})`; };
+  canvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    const r = canvas.getBoundingClientRect();
+    const mx = e.clientX - r.left, my = e.clientY - r.top;
+    const k2 = Math.min(3, Math.max(0.10, view.k * Math.exp(-e.deltaY * 0.0016)));
+    view.x = mx - (mx - view.x) * (k2 / view.k);
+    view.y = my - (my - view.y) * (k2 / view.k);
+    view.k = k2; apply();
+  }, { passive: false });
+  let panning = null;
+  canvas.addEventListener('pointerdown', e => {
+    if (isNodeTarget(e.target)) return;
+    panning = { x: e.clientX - view.x, y: e.clientY - view.y };
+    canvas.classList.add('panning'); canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', e => {
+    if (!panning) return;
+    view.x = e.clientX - panning.x; view.y = e.clientY - panning.y; apply();
+  });
+  canvas.addEventListener('pointerup', () => { panning = null; canvas.classList.remove('panning'); });
+  view.apply = apply;
+  return view;
+}
+
+</script>
+<script>
+const DATA = {"title": "Concept map", "subtitle": "Avel Guénin–Carlut, Reality as we know it: Active Inference, contextuality and the common ground of socio-material practices", "chapters": [{"id": "intro", "label": "Introduction", "color": 0}, {"id": "ch1", "label": "Ch. 1 — Mind and world", "color": 1}, {"id": "ch2", "label": "Ch. 2 — Active Inference", "color": 2}, {"id": "ch3", "label": "Ch. 3 — Common ground", "color": 3}, {"id": "ch4", "label": "Ch. 4 — Relational FEP", "color": 4}, {"id": "ch5", "label": "Ch. 5 — Five sketches", "color": 5}, {"id": "concl", "label": "Conclusion", "color": 6}], "groups": [{"id": "formal", "label": "Formal frameworks"}, {"id": "philsci", "label": "Philosophy of science"}, {"id": "mind", "label": "Mind & meaning"}, {"id": "life", "label": "Life & organization"}, {"id": "social", "label": "Social & material practice"}], "edgeTypes": {"grounds": {"label": "grounds / underpins", "dash": null}, "formalizes": {"label": "formalizes", "dash": "10 3 2 3"}, "kind_of": {"label": "is a kind / variant of", "dash": "1 4"}, "part_of": {"label": "is part of", "dash": "1 4"}, "emerges_from": {"label": "emerges from", "dash": null}, "enables": {"label": "enables", "dash": null}, "contrasts_with": {"label": "contrasts with", "dash": "2 3"}, "applies_to": {"label": "applies to", "dash": "7 4"}}, "nodes": [{"id": "fep", "label": "Free Energy Principle (FEP)", "group": "formal", "chapter": "ch2", "tier": 1, "importance": 5, "kind": "framework", "gloss": "Mathematical principle that bounded, blanket-partitioned dynamical systems with an attracting distribution flow as if minimizing Variational Free Energy over sensory and active states.", "appears": ["ch2", "concl"]}, {"id": "aif", "label": "Active Inference (AIF)", "group": "formal", "chapter": "ch2", "tier": 1, "importance": 5, "kind": "framework", "gloss": "Neurocomputational framework where perception and action are jointly driven by prediction: agents update and enact an implicit world-model embedded in their dynamics.", "appears": ["intro", "ch2", "ch3", "ch4", "ch5"]}, {"id": "markov-blanket", "label": "Markov blanket", "group": "formal", "chapter": "ch2", "tier": 1, "importance": 5, "kind": "construct", "gloss": "Partition of a system into agent, boundary and environment states, with boundary split into sensory and active states, conditioning statistical independence.", "appears": ["ch2", "ch4"]}, {"id": "cfep", "label": "classical FEP (cFEP)", "group": "formal", "chapter": "ch4", "tier": 1, "importance": 4, "kind": "construct", "gloss": "Friston's dynamical-systems-theoretic FEP: meaning enacted within a pre-defined state space and Markov blanket; describes how a system's symmetries bring about its observations.", "appears": ["ch4", "concl"]}, {"id": "rfep", "label": "relational FEP (rFEP)", "group": "formal", "chapter": "ch4", "tier": 1, "importance": 4, "kind": "construct", "gloss": "Fields, Friston et al.'s 'quantum' FEP read relationally: observation as contextual information transfer through reference frames across a holographic screen; describes how observations bring about symmetries.", "appears": ["ch4", "concl"]}, {"id": "contextuality", "label": "contextuality", "group": "life", "chapter": "ch4", "tier": 1, "importance": 5, "kind": "construct", "gloss": "Non-commutativity of observation operators: the observer irreducibly participates in defining observed states. Graded 1–3; contextuality 3 is the irreducible (re)production of a system's structure through the emergence of novel observables.", "appears": ["intro", "ch4", "ch5", "concl"]}, {"id": "constraint", "label": "constraint", "group": "life", "chapter": "ch4", "tier": 1, "importance": 5, "kind": "construct", "gloss": "A system inducing a symmetry breaking in a thermodynamical process while remaining invariant at that process's timescale; dually cause of processes and product of others.", "appears": ["intro", "ch3", "ch4"]}, {"id": "closure-constraints", "label": "closure of constraints", "group": "life", "chapter": "ch4", "tier": 1, "importance": 5, "kind": "construct", "gloss": "Biological organization as a closed system where every constraint is produced by and producer of at least one other constraint — the dissertation's unifying ontology of autonomy.", "appears": ["intro", "ch4", "ch5", "concl"]}, {"id": "common-ground", "label": "common ground (Stalnaker)", "group": "social", "chapter": "ch1", "tier": 1, "importance": 5, "kind": "construct", "gloss": "Set of shared presuppositions cooperatively maintained by interlocutors, determining the content of assertions and speech acts in a conversation.", "appears": ["intro", "ch1", "ch3", "ch4"]}, {"id": "sm-common-ground", "label": "socio-material common ground", "group": "social", "chapter": "ch3", "tier": 1, "importance": 5, "kind": "framework", "gloss": "The explicit or implicit, social or material, synchronic or diachronic predictive constraints on engagement with a socio-material context; extends Stalnaker's common ground beyond language.", "appears": ["intro", "ch1", "ch2", "ch3", "ch5", "concl"]}, {"id": "representational-modality", "label": "representational modality", "group": "mind", "chapter": "ch1", "tier": 1, "importance": 5, "kind": "construct", "gloss": "Modality of cognition consisting in internal manipulation of an inner model of the world equipped with a priori meaning.", "appears": ["intro", "ch1"]}, {"id": "expressive-modality", "label": "expressive modality", "group": "mind", "chapter": "ch1", "tier": 1, "importance": 5, "kind": "construct", "gloss": "Modality of cognition consisting in the a posteriori reconstruction of cognitive meaning through engagement with the world and others.", "appears": ["intro", "ch1", "ch2", "ch5", "concl"]}, {"id": "sync-diachrony", "label": "synchronic / diachronic", "group": "mind", "chapter": "ch1", "tier": 1, "importance": 5, "kind": "distinction", "gloss": "Distinction between describing the mind-world relation at a point in time and describing the historical construction of agents and concepts through engagement.", "appears": ["intro", "ch1", "ch3"]}, {"id": "structural-realism", "label": "structural realism", "group": "philsci", "chapter": "ch1", "tier": 1, "importance": 4, "kind": "framework", "gloss": "Scientific theories describe formal structure of systematic relations between entities rather than the entities' intrinsic nature; ontic variant makes structure itself real.", "appears": ["ch1", "ch2", "ch4", "concl"]}, {"id": "participatory-realism", "label": "participatory realism", "group": "philsci", "chapter": "ch4", "tier": 1, "importance": 5, "kind": "principle", "gloss": "Position that perceptive content is real (conditions experience and cognition) and participatory (brought about by the agent's own activity and dispositions).", "appears": ["ch4"]}, {"id": "newtonian-paradigm", "label": "Newtonian paradigm (DST)", "group": "philsci", "chapter": "ch4", "tier": 1, "importance": 4, "kind": "construct", "gloss": "Rosen's term: explanation by entailment from well-defined laws of motion over well-defined states in a well-defined space — the frame Dynamical Systems Theory imports.", "appears": ["ch4", "concl"]}, {"id": "relational-approach", "label": "relational approach", "group": "philsci", "chapter": "ch4", "tier": 1, "importance": 4, "kind": "construct", "gloss": "The view (relational biology, Rosen) that the space embedding a system's activity is defined by the physical interactions it engages in — not given a priori.", "appears": ["intro", "ch1", "ch4", "ch5", "concl"]}, {"id": "enaction", "label": "enaction", "group": "mind", "chapter": "ch1", "tier": 1, "importance": 5, "kind": "process", "gloss": "Cognitive meaning as product of the very processes by which agents realize the meaning they give to the world through embodied engagement.", "appears": ["intro", "ch1", "concl"]}, {"id": "groundlessness", "label": "groundlessness", "group": "mind", "chapter": "ch1", "tier": 1, "importance": 5, "kind": "principle", "gloss": "Cognition is not grounded in any intrinsic mental or material layer; it is a self-constructive relational process continuously reshaping itself and its description.", "appears": ["ch1"]}, {"id": "mental-representation", "label": "mental representation", "group": "mind", "chapter": "ch1", "tier": 1, "importance": 5, "kind": "construct", "gloss": "Token holding a semantic standing-for relation to an object, such that operations on the token inform engagement with the object.", "appears": ["intro", "ch1", "ch2", "ch3", "concl"]}, {"id": "affordance-landscape", "label": "landscape of affordances", "group": "social", "chapter": "ch2", "tier": 1, "importance": 4, "kind": "construct", "gloss": "The value-laden field of action opportunities entailed by a socio-material form of life; cognition as navigation toward optimal grip.", "appears": ["intro", "ch1", "ch2", "ch3", "ch5"]}, {"id": "existential-stance", "label": "existential stance", "group": "mind", "chapter": "ch2", "tier": 1, "importance": 5, "kind": "construct", "gloss": "Second-order, evaluative relation to one's world and self (de Haan et al.), reframed as a socio-material practice of reflexive, culturally embedded self-interpretation.", "appears": ["ch2", "ch3"]}, {"id": "mindshaping", "label": "mindshaping", "group": "mind", "chapter": "ch1", "tier": 1, "importance": 4, "kind": "process", "gloss": "Active regulation of self and others to fit shared interpretative norms, making mutual predictability, commitment, and mindreading tractable.", "appears": ["intro", "ch1", "ch2"]}, {"id": "forms-of-life", "label": "forms of life", "group": "social", "chapter": "intro", "tier": 1, "importance": 4, "kind": "construct", "gloss": "In the technical sense proposed: autonomous organizations embedded within socio-material landscapes per se, defined by closure among socio-material constraints (after Wittgenstein).", "appears": ["intro", "ch2", "ch5"]}, {"id": "sm-autonomy", "label": "socio-material autonomy", "group": "social", "chapter": "ch5", "tier": 1, "importance": 5, "kind": "construct", "gloss": "Autonomous organization constituted when a system of socio-material constraints verifies closure, making the organization self-producing at the collective scale.", "appears": ["intro", "ch5"]}, {"id": "sm-constraints", "label": "socio-material constraints", "group": "social", "chapter": "ch5", "tier": 1, "importance": 5, "kind": "construct", "gloss": "Constraints embedded in the shared social and material context that, alongside neuro-dynamic and biological constraints, participate in defining an agent's cognitive organization.", "appears": ["intro", "ch5"]}, {"id": "autopoiesis", "label": "autopoiesis / biological autonomy", "group": "life", "chapter": "ch2", "tier": 1, "importance": 4, "kind": "construct", "gloss": "A network of processes realizing its own organization, defining and reconstructing biological-cognitive identity; what the classical FEP cannot capture.", "appears": ["intro", "ch2", "ch4", "ch5", "concl"]}, {"id": "open-endedness", "label": "open-endedness", "group": "life", "chapter": "intro", "tier": 1, "importance": 4, "kind": "construct", "gloss": "Capacity of a system not merely to evolve within a given possibility space but to generate and realize novel states without a priori limits.", "appears": ["ch5"]}, {"id": "reference-frames", "label": "reference frames", "group": "life", "chapter": "ch4", "tier": 1, "importance": 5, "kind": "construct", "gloss": "Observation basis developed by an agent that contextually determines what information crosses the boundary; formalizes the selective openness of biological organization to the world.", "appears": ["ch4", "ch5"]}, {"id": "practice-first", "label": "practice-first account of culture", "group": "social", "chapter": "intro", "tier": 1, "importance": 4, "kind": "construct", "gloss": "Culture as an ecology of practices embedded in material/social context, feeding back into the architecture of cognition — against trait-transmission models.", "appears": ["intro", "ch1", "ch3", "ch5"]}, {"id": "self-evidencing", "label": "self-evidencing", "group": "formal", "chapter": "ch2", "tier": 1, "importance": 4, "kind": "principle", "gloss": "Hohwy's term for adaptive cognition under Active Inference: gathering evidence for one's own continued existence as the specific form of life one is.", "appears": ["ch2", "ch3", "ch4"]}, {"id": "cognitive-realism", "label": "cognitive realism", "group": "philsci", "chapter": "ch1", "tier": 1, "importance": 5, "kind": "construct", "gloss": "View that a fixed, real structure bridging mind and world grounds mental content, licensing autonomous cognitive explanation within structural realism.", "appears": ["ch1"]}, {"id": "sm-premise", "label": "socio-material premise", "group": "social", "chapter": "concl", "tier": 1, "importance": 5, "kind": "construct", "gloss": "Basic unit of the socio-material common ground: an implicit premise for engagement, inferable through qualitative behaviour analysis.", "appears": ["concl"]}, {"id": "in-ecology-of-practices", "label": "ecology of socio-material practices", "group": "social", "chapter": "intro", "tier": 1, "importance": 5, "kind": "construct", "gloss": "Web of practices embedded in shared material and social context, existing only through agents' engagement, in which human cognition is irreducibly embedded.", "appears": ["intro"]}, {"id": "in-second-order-language", "label": "second-order function of language", "group": "mind", "chapter": "intro", "tier": 2, "importance": 4, "kind": "construct", "gloss": "Language as a mechanism shaping human cognition by expressing it publicly and compositionally, enabling collective negotiation rather than truth-seeking representation.", "appears": ["intro"]}, {"id": "in-alamut", "label": "Alamut / the Nizari State", "group": "social", "chapter": "intro", "tier": 3, "importance": 2, "kind": "case", "gloss": "Historical-literary case (Bartol's Sabbah) where speech served to produce compliance by weaving a reality, not to represent truth.", "appears": ["intro"]}, {"id": "in-mechanistic-representation", "label": "mechanistic account of representation", "group": "mind", "chapter": "intro", "tier": 2, "importance": 3, "kind": "construct", "gloss": "Representation and computation defined as de facto functional patterns of neural mechanisms exploiting causal co-variation with the world (Bechtel, Piccinini).", "appears": ["intro"]}, {"id": "in-neurodynamic-constraints", "label": "neurodynamic constraints", "group": "life", "chapter": "intro", "tier": 2, "importance": 3, "kind": "construct", "gloss": "'Mind' understood as a system of constraints produced in neural dynamics, standing in closure relations with socio-material counterparts.", "appears": ["intro"]}, {"id": "in-extended-autonomy", "label": "extended cognitive autonomy", "group": "life", "chapter": "intro", "tier": 2, "importance": 4, "kind": "construct", "gloss": "Cognitive autonomy embedded across classical biological boundaries, defined by closure relations between neurodynamic and socio-material constraints.", "appears": ["intro"]}, {"id": "c1-computational-functionalism", "label": "computational functionalism", "group": "mind", "chapter": "ch1", "tier": 1, "importance": 4, "kind": "framework", "gloss": "Founding framework of cognitive science: the mind is the software of the brain, computing over representations independently of biological implementation.", "appears": ["ch1"]}, {"id": "c1-cognitive-neuroscience", "label": "cognitive neuroscience", "group": "mind", "chapter": "ch1", "tier": 2, "importance": 4, "kind": "framework", "gloss": "Approach explicitly modelling the actual multi-level bio-computational organization of cognition; relaxes computational functionalism into de facto functional organization.", "appears": ["ch1"]}, {"id": "c1-4e-cognition", "label": "4E approach to cognition", "group": "mind", "chapter": "ch1", "tier": 2, "importance": 3, "kind": "framework", "gloss": "Family of theses that cognition is Embodied, Embedded, Extended, Enactive (plus Ecological): constituted or enabled by processes outside the brain.", "appears": ["ch1"]}, {"id": "c1-affordance", "label": "affordance", "group": "mind", "chapter": "ch1", "tier": 2, "importance": 3, "kind": "construct", "gloss": "Possibility for action directly perceived in the environment, per Gibsonian ecological psychology.", "appears": ["ch1"]}, {"id": "c1-cartesian-anxiety", "label": "Cartesian anxiety", "group": "philsci", "chapter": "ch1", "tier": 2, "importance": 3, "kind": "construct", "gloss": "Endless oscillation between seeking an outer ground in the world or an inner ground in the mind, driven by craving for an absolute foundation.", "appears": ["ch1"]}, {"id": "c1-parity-principle", "label": "parity principle", "group": "mind", "chapter": "ch1", "tier": 2, "importance": 3, "kind": "principle", "gloss": "A worldly process counts as cognitive iff it is functionally isomorphic, at a coarse level, to an uncontroversially cognitive brain process.", "appears": ["ch1"]}, {"id": "c1-dc-em-framework", "label": "DC/EM framework (extended mind)", "group": "mind", "chapter": "ch1", "tier": 2, "importance": 3, "kind": "framework", "gloss": "Research programme on Distributed Cognition and the Extended Mind: cognition actively manipulates engrams and exograms embedded in cultural-material ecologies.", "appears": ["ch1"]}, {"id": "c1-scaffolded-mind", "label": "scaffolded mind", "group": "mind", "chapter": "ch1", "tier": 2, "importance": 3, "kind": "construct", "gloss": "Sterelny's view: environmental resources causally support cognition and its development without being constitutive parts of the mind.", "appears": ["ch1"]}, {"id": "c1-niche-construction", "label": "niche construction", "group": "life", "chapter": "ch1", "tier": 2, "importance": 3, "kind": "process", "gloss": "Organisms' intentional, inheritable transformation of their environment, altering developmental constraints and facilitating transmission of traits across generations.", "appears": ["ch1"]}, {"id": "c1-agential-realism", "label": "agential realism", "group": "philsci", "chapter": "ch1", "tier": 2, "importance": 4, "kind": "framework", "gloss": "Barad's framework in which boundaries and properties of objects and observers emerge through intra-action within socio-material practices, not prior to them.", "appears": ["ch1"]}, {"id": "c1-intra-action", "label": "intra-action", "group": "philsci", "chapter": "ch1", "tier": 2, "importance": 3, "kind": "process", "gloss": "Constitutive (not causal) process through which observer and observed emerge as separate systems in relation to each other.", "appears": ["ch1"]}, {"id": "c1-material-engagement-theory", "label": "material engagement theory", "group": "mind", "chapter": "ch1", "tier": 2, "importance": 4, "kind": "framework", "gloss": "Malafouris's framework: thinking emerges from enactive engagement with material culture, which is granted material agency via methodological fetishism.", "appears": ["ch1"]}, {"id": "c1-shared-intentionality", "label": "shared intentionality", "group": "mind", "chapter": "ch1", "tier": 2, "importance": 4, "kind": "construct", "gloss": "General human disposition to understand, shape, and be shaped by others' mental states through joint social engagement.", "appears": ["ch1"]}, {"id": "c1-holism-problem", "label": "holism problem", "group": "mind", "chapter": "ch1", "tier": 3, "importance": 2, "kind": "construct", "gloss": "Intractability of inferring propositional attitudes from behaviour, since identical behaviour is compatible with infinitely many attitude sets.", "appears": ["ch1"]}, {"id": "c1-symbolic-indexical", "label": "symbolic vs indexical communication", "group": "mind", "chapter": "ch1", "tier": 3, "importance": 2, "kind": "distinction", "gloss": "Distinction between signs carrying meaning by conventional reference alone and signs carrying meaning by causal or physical connection.", "appears": ["ch1"]}, {"id": "c1-musical-vocalization", "label": "musical vocalization", "group": "mind", "chapter": "ch1", "tier": 3, "importance": 2, "kind": "case", "gloss": "Non-dyadic practice of social bonding enabling collective emotional regulation via synchronized, publicly negotiable expression of inner experience.", "appears": ["ch1"]}, {"id": "c1-pragmatics", "label": "pragmatics", "group": "mind", "chapter": "ch1", "tier": 2, "importance": 3, "kind": "framework", "gloss": "Study of how linguistic meaning is used and understood in specific contexts of social interaction, distinct from and complementary to syntax and semantics.", "appears": ["ch1"]}, {"id": "c1-context-content", "label": "context / content interplay", "group": "mind", "chapter": "ch1", "tier": 1, "importance": 5, "kind": "distinction", "gloss": "Stalnaker's principle that the content of a proposition is a function of the context of presuppositions in which it is understood.", "appears": ["ch1"]}, {"id": "c1-accommodation", "label": "accommodation (conversational constraints)", "group": "mind", "chapter": "ch1", "tier": 3, "importance": 2, "kind": "process", "gloss": "Listener's inference of the speaker's presuppositions, alongside determinacy, uniformity, and informativeness constraints, by which interlocutors converge on common ground.", "appears": ["ch1"]}, {"id": "c1-instrumental-realism", "label": "instrumental realism (intentional stance)", "group": "philsci", "chapter": "ch1", "tier": 2, "importance": 3, "kind": "framework", "gloss": "Dennett's stance: representations are real explanatory constructs attributed by treating systems as if driven by mental states, agnostic about underlying entities.", "appears": ["ch1"]}, {"id": "c1-teleosemantic-representation", "label": "teleosemantic neural representation", "group": "mind", "chapter": "ch1", "tier": 2, "importance": 3, "kind": "construct", "gloss": "Neural representation as information de facto carried by activity patterns in virtue of their functional role within the brain's control architecture.", "appears": ["ch1"]}, {"id": "c1-multi-level-explanation", "label": "multi-level mechanistic explanation", "group": "philsci", "chapter": "ch1", "tier": 2, "importance": 3, "kind": "framework", "gloss": "Explanatory ideal requiring causal-mechanical description of cognitive architecture at every relevant scale of activity.", "appears": ["ch1"]}, {"id": "c2-predictive-processing", "label": "Predictive Processing", "group": "formal", "chapter": "ch2", "tier": 2, "importance": 3, "kind": "framework", "gloss": "Family of theories where perception reconstructs the world by predicting upcoming sensations from prior knowledge and correcting via prediction errors, circumventing model inversion.", "appears": ["ch2"]}, {"id": "c2-hpc", "label": "Hierarchical Predictive Coding (HPC)", "group": "formal", "chapter": "ch2", "tier": 2, "importance": 3, "kind": "framework", "gloss": "Predictive Processing across nested neuronal layers, each predicting lower-layer activity; explains deep multi-modal models, generalization from sparse data, and descending connections.", "appears": ["ch2"]}, {"id": "c2-perceptual-inference", "label": "perceptual inference", "group": "formal", "chapter": "ch2", "tier": 2, "importance": 3, "kind": "process", "gloss": "Helmholtz's problem of inferring the causal structure of the environment from limited raw sensation (e.g. a 2d retinal array).", "appears": ["ch2"]}, {"id": "c2-forward-model", "label": "forward model / inverse problem", "group": "formal", "chapter": "ch2", "tier": 3, "importance": 3, "kind": "construct", "gloss": "Model of how world states shape sensations; its inversion for perception is intractable, noise-unstable, and presupposes an a priori perfect model.", "appears": ["ch2"]}, {"id": "c2-vfe", "label": "Variational Free Energy (VFE)", "group": "formal", "chapter": "ch2", "tier": 1, "importance": 5, "kind": "construct", "gloss": "Tractable information-theoretic upper bound on surprise (−ln P(y)); measures a distribution's fitness to explain observations; its minimization approximates Bayesian inference.", "appears": ["ch2"]}, {"id": "c2-generative-model", "label": "generative model", "group": "formal", "chapter": "ch2", "tier": 2, "importance": 4, "kind": "construct", "gloss": "The joint distribution P(x,y), product of prior and likelihood, implicitly embodied by the agent and mutually constituted with its self-evidencing actions.", "appears": ["ch2"]}, {"id": "c2-recognition-distribution", "label": "recognition distribution", "group": "formal", "chapter": "ch2", "tier": 2, "importance": 5, "kind": "construct", "gloss": "Approximate posterior q(e|λ) parametrized by internal states; the minimal, action-oriented representational content the FEP derives from synchronization across the blanket.", "appears": ["ch2"]}, {"id": "c2-precision", "label": "precision", "group": "formal", "chapter": "ch2", "tier": 2, "importance": 3, "kind": "construct", "gloss": "Strength of an ascending prediction error, setting how rigidly it constrains higher layers; determines whether errors are corrected passively (updating) or actively (acting).", "appears": ["ch2"]}, {"id": "c2-epistemic-pragmatic-action", "label": "epistemic vs pragmatic action", "group": "formal", "chapter": "ch2", "tier": 2, "importance": 3, "kind": "distinction", "gloss": "Distinction between action gathering information (saccades, exploration) and action realizing expectations by changing the environment; both products of one predictive imperative.", "appears": ["ch2"]}, {"id": "c2-attracting-distribution", "label": "attracting distribution", "group": "formal", "chapter": "ch2", "tier": 3, "importance": 3, "kind": "construct", "gloss": "The well-defined stationary distribution toward which an ergodic system converges; defines the implicit model and true posterior the agent tracks.", "appears": ["ch2"]}, {"id": "c2-synchronization-manifold", "label": "synchronization manifold", "group": "formal", "chapter": "ch2", "tier": 3, "importance": 4, "kind": "construct", "gloss": "Subspace coupling each boundary state to the most likely internal and external states; flow pulled back to it performs approximate Bayesian inference.", "appears": ["ch2"]}, {"id": "c2-dissipative-conservative-flow", "label": "dissipative vs conservative flow", "group": "formal", "chapter": "ch2", "tier": 3, "importance": 2, "kind": "distinction", "gloss": "Helmholtz decomposition of a system's flow into curl-free optimization toward likely states and divergence-free flow along iso-probability trajectories enabling complex dynamics.", "appears": ["ch2"]}, {"id": "c2-expected-free-energy", "label": "Expected Free Energy / path-integral formulation", "group": "formal", "chapter": "ch2", "tier": 3, "importance": 2, "kind": "construct", "gloss": "Free energy metric governing temporally extended planning as inference, defined in the FEP's path-integral formulation; enables description of path-dependency.", "appears": ["ch2"]}, {"id": "c2-strange-particles", "label": "strange particles", "group": "formal", "chapter": "ch2", "tier": 3, "importance": 2, "kind": "construct", "gloss": "Systems whose boundary partitions into sensory and active states, so autonomous states enact their implicit model — supporting a stronger explanatory reading of inference.", "appears": ["ch2"]}, {"id": "c2-markovian-monism", "label": "Markovian monism", "group": "formal", "chapter": "ch2", "tier": 2, "importance": 4, "kind": "framework", "gloss": "Friston's ontology on which every 'thing' exists in virtue of a Markov blanket and self-organizes under the FEP — 'blankets all the way down'.", "appears": ["ch2"]}, {"id": "c2-pearl-friston-blankets", "label": "Pearl blanket vs Friston blanket", "group": "formal", "chapter": "ch2", "tier": 2, "importance": 4, "kind": "distinction", "gloss": "Bruineberg et al.'s distinction between model-relative statistical blankets in Bayesian networks and putative physical boundaries of agents; conflating them is map–territory fallacy.", "appears": ["ch2"]}, {"id": "c2-inference-with-within-model", "label": "inference with vs within a model", "group": "philsci", "chapter": "ch2", "tier": 3, "importance": 3, "kind": "distinction", "gloss": "Distinction between using Bayesian formalism to study physical processes and claiming physical processes themselves enact Bayesian inference.", "appears": ["ch2"]}, {"id": "c2-renormalization", "label": "renormalization procedure", "group": "formal", "chapter": "ch2", "tier": 2, "importance": 4, "kind": "process", "gloss": "Recursive coarse-graining selecting progressively slower dynamical modes (via Lyapunov coefficients) until self-sustained dynamics appear, yielding a nested Markovian hierarchy.", "appears": ["ch2"]}, {"id": "c2-transient-blankets", "label": "transient Markov blankets", "group": "formal", "chapter": "ch2", "tier": 2, "importance": 4, "kind": "construct", "gloss": "Blankets defined only locally by the flow's derivative, evolving through the system's own activity; instrumental, but affording a more natural theory of autopoiesis.", "appears": ["ch2"]}, {"id": "c2-partial-isomorphism", "label": "partial isomorphism", "group": "philsci", "chapter": "ch2", "tier": 2, "importance": 4, "kind": "construct", "gloss": "Structural realist relation between theory and world: a formal structure corresponds to an aspect of real structure without capturing it entirely; grounds model-centric explanation.", "appears": ["ch2"]}, {"id": "c2-adaptive-active-inference", "label": "adaptive active inference", "group": "formal", "chapter": "ch2", "tier": 3, "importance": 2, "kind": "construct", "gloss": "Kirchhoff et al.'s ability of living-cognitive systems to modulate sensorimotor coupling along temporally deep self-evidencing trajectories, via nested Markov blanket hierarchies.", "appears": ["ch2"]}, {"id": "c2-sif", "label": "Skilled Intentionality Framework (SIF)", "group": "social", "chapter": "ch2", "tier": 2, "importance": 4, "kind": "framework", "gloss": "Framework grounding cultural cognition in situated normativity: skilled, affectively attuned engagement with affordances embedded in socio-material forms of life.", "appears": ["ch2"]}, {"id": "c2-education-of-attention", "label": "education of attention", "group": "social", "chapter": "ch2", "tier": 2, "importance": 3, "kind": "process", "gloss": "Gibson's process by which social practice trains skilful perception of and affective response to affordances, integrating social norms into lived experience.", "appears": ["ch2"]}, {"id": "c2-landscape-field-affordances", "label": "landscape vs field of affordances", "group": "social", "chapter": "ch2", "tier": 2, "importance": 4, "kind": "distinction", "gloss": "Distinction between all affordances entailed by a socio-material form of life and the relevant affordances a particular agent perceives and engages now.", "appears": ["ch2"]}, {"id": "c2-optimal-grip", "label": "optimal grip", "group": "social", "chapter": "ch2", "tier": 2, "importance": 3, "kind": "construct", "gloss": "FEP-driven attraction toward optimal attunement to one's experienced field of affordances, paired with selection of that field given homeostatic imperatives.", "appears": ["ch2"]}, {"id": "c2-ttom", "label": "Thinking Through Other Minds (TTOM)", "group": "social", "chapter": "ch2", "tier": 2, "importance": 3, "kind": "framework", "gloss": "Veissière et al.'s model of enculturation where regimes of attention are integrated via implicitly anticipating others' judgements of salience and valence.", "appears": ["ch2"]}, {"id": "c2-regimes-of-attention", "label": "regimes of attention / cultural affordances", "group": "social", "chapter": "ch2", "tier": 3, "importance": 2, "kind": "construct", "gloss": "Ramstead et al.'s culturally trained patterns of attention enabling identification and engagement with affordances embedded in shared forms of life.", "appears": ["ch2"]}, {"id": "c2-expressive-cognition", "label": "expressive cognition", "group": "mind", "chapter": "ch2", "tier": 2, "importance": 4, "kind": "construct", "gloss": "Conceiving one's actions as expressions of communicative intentions through a culturally embedded system of interpretation, without mentalization.", "appears": ["ch2"]}, {"id": "c3-premises", "label": "premises (over perception and action)", "group": "social", "chapter": "ch3", "tier": 1, "importance": 5, "kind": "construct", "gloss": "Materially or socially embedded constraints functioning as prior expectations agents must accommodate to understand a context; the basic building blocks of the common ground.", "appears": ["ch3"]}, {"id": "c3-accommodation-embedding", "label": "accommodation vs embedding of premises", "group": "social", "chapter": "ch3", "tier": 2, "importance": 4, "kind": "distinction", "gloss": "Synchronic engagement accommodates premises already present in the common ground; diachronic change embeds novel premises into it through expressive action.", "appears": ["ch3"]}, {"id": "c3-practical-premises", "label": "practical premises for public action", "group": "social", "chapter": "ch3", "tier": 2, "importance": 4, "kind": "construct", "gloss": "Táíwò's generalization of the common ground to normative expectations over propositional and non-propositional expression, defining what is socially feasible.", "appears": ["ch3"]}, {"id": "c3-embedded-normativity", "label": "embedded normativity", "group": "social", "chapter": "ch3", "tier": 1, "importance": 5, "kind": "construct", "gloss": "Normativity embedded in the agent–environment dynamics driving perception and engagement, irreducibly shaped by both social and material dimensions (Guénin–Carlut & Albarracin 2024).", "appears": ["ch3"]}, {"id": "c3-instruction-of-imagination", "label": "instruction of imagination", "group": "mind", "chapter": "ch3", "tier": 3, "importance": 2, "kind": "construct", "gloss": "Dor's account of language as instructing others' imagination; under AIF this 'imagination' just is the basic predictive processes underlying perception and action.", "appears": ["ch3"]}, {"id": "c3-practice-first-propaganda", "label": "practice-first account of propaganda", "group": "social", "chapter": "ch3", "tier": 2, "importance": 4, "kind": "framework", "gloss": "Táíwò's view that propaganda works by shaping the common ground of socially feasible public action rather than persuading private belief.", "appears": ["ch3"]}, {"id": "c3-emperors-new-clothes", "label": "The Emperor's New Clothes", "group": "social", "chapter": "ch3", "tier": 3, "importance": 3, "kind": "case", "gloss": "Andersen's fable, read via Táíwò, as parable for power shaping the common ground of acknowledgeable fact and feasible action rather than private belief.", "appears": ["ch3"]}, {"id": "c3-dramaturgic-approach", "label": "dramaturgic approach", "group": "social", "chapter": "ch3", "tier": 2, "importance": 3, "kind": "framework", "gloss": "Goffman's analytical methodology describing how individuals maintain and negotiate definitions (frames) of social situations through interaction, self-presentation, and face-work.", "appears": ["ch3"]}, {"id": "c3-frame", "label": "frames (Goffman) / definition of the situation", "group": "social", "chapter": "ch3", "tier": 2, "importance": 4, "kind": "construct", "gloss": "The negotiated definition of a social situation constraining what events may be acknowledged, what actions undertaken, and how they are understood; re-read as predictive common ground.", "appears": ["ch3"]}, {"id": "c3-structure-agency", "label": "structure vs agency", "group": "social", "chapter": "ch3", "tier": 2, "importance": 4, "kind": "distinction", "gloss": "Archer's 'vexatious fact of society': humans are both constrained by social structure and free to act in ways that change it.", "appears": ["ch3"]}, {"id": "c3-structuration-theory", "label": "structuration theory", "group": "social", "chapter": "ch3", "tier": 2, "importance": 4, "kind": "framework", "gloss": "Giddens's account dissolving the structure–agency dichotomy: structure as virtual order existing only through instantiation in activity, reproduced via rules embedded in practical consciousness.", "appears": ["ch3"]}, {"id": "c3-duality-of-structure", "label": "duality of structure", "group": "social", "chapter": "ch3", "tier": 3, "importance": 3, "kind": "principle", "gloss": "Giddens's thesis that structure is both constitutive medium and outcome of agency, existing as a 'virtual order' instantiated in human activity.", "appears": ["ch3"]}, {"id": "c3-morphogenetic-approach", "label": "morphogenetic approach", "group": "social", "chapter": "ch3", "tier": 2, "importance": 4, "kind": "framework", "gloss": "Archer's methodological dualism: agents integrate structure, interact, then elaborate structure in a temporally separated cycle mediated by reflexivity.", "appears": ["ch3"]}, {"id": "c3-central-conflation", "label": "central conflation", "group": "social", "chapter": "ch3", "tier": 3, "importance": 3, "kind": "construct", "gloss": "Archer's charge that structuration theory makes structure and agency methodologically inseparable, blocking investigation of how their interaction is mediated.", "appears": ["ch3"]}, {"id": "c3-internal-conversation", "label": "internal conversation (reflexivity)", "group": "mind", "chapter": "ch3", "tier": 2, "importance": 4, "kind": "process", "gloss": "Archer's mechanism mediating structure and behaviour: reflexive self-dialogue; read here as a linguistic modality of the existential stance.", "appears": ["ch3"]}, {"id": "c3-unification-church", "label": "Unification Church (UC)", "group": "social", "chapter": "ch3", "tier": 2, "importance": 4, "kind": "case", "gloss": "Millenarian New Religious Movement — family-centred theology, Blessing Ceremony mega-weddings, decentralized chapter structure — serving as case study of identity capture.", "appears": ["ch3"]}, {"id": "c3-brainwashing-model", "label": "brainwashing / thought reform model", "group": "social", "chapter": "ch3", "tier": 3, "importance": 2, "kind": "framework", "gloss": "Hunter's and Lifton's model attributing cult conversion to coercive processes erasing agency; empirically refuted for the UC by ethnographic research.", "appears": ["ch3"]}, {"id": "c3-lovebombing", "label": "lovebombing", "group": "social", "chapter": "ch3", "tier": 3, "importance": 3, "kind": "process", "gloss": "Barker's term: ostentatious demonstrations of affection toward newcomers, unambiguously conditional on reciprocation and compliance with local premises for public action.", "appears": ["ch3"]}, {"id": "c3-social-filtering", "label": "social filtering", "group": "social", "chapter": "ch3", "tier": 3, "importance": 3, "kind": "process", "gloss": "Selection effect whereby lovebombing retains recruits whose prior socialization — conservative, church-grounded, validation-oriented backgrounds — already aligns with UC premises.", "appears": ["ch3"]}, {"id": "c3-total-participation", "label": "expectation of total participation", "group": "social", "chapter": "ch3", "tier": 3, "importance": 3, "kind": "process", "gloss": "Extension of Taylor's 'choreography of total participation': ritual settings demanding performed elation and total commitment, binding affect to UC norms.", "appears": ["ch3"]}, {"id": "c3-identity-capture", "label": "identity capture", "group": "social", "chapter": "ch3", "tier": 2, "importance": 5, "kind": "process", "gloss": "Progressive alignment of a convert's self-model with premises embedded in a designed common ground, making imposed norms feel like natural self-expression.", "appears": ["ch3"]}, {"id": "c3-embodied-reflective-self", "label": "embodied vs reflective self-model", "group": "mind", "chapter": "ch3", "tier": 2, "importance": 4, "kind": "distinction", "gloss": "Distinction between the self-model directly driving engagement with the world and the self-model engaged through reflection; their mismatch generates structuring prediction errors.", "appears": ["ch3"]}, {"id": "c3-structuralism", "label": "structuralism", "group": "social", "chapter": "ch3", "tier": 2, "importance": 4, "kind": "framework", "gloss": "Saussure/Lévi-Strauss framework treating culture as a shared symbolic system (langue) of rules and binary oppositions mediating understanding of social and material worlds.", "appears": ["ch3"]}, {"id": "c3-post-structuralism", "label": "post-structuralism", "group": "social", "chapter": "ch3", "tier": 3, "importance": 2, "kind": "framework", "gloss": "Movement (Merleau-Ponty, Foucault, Bourdieu, Derrida) foregrounding situated experience and power in subject formation; critiques structuralism without supplying an alternative inference method.", "appears": ["ch3"]}, {"id": "c3-structural-model-megalithic", "label": "structural model of megalithic space", "group": "social", "chapter": "ch3", "tier": 2, "importance": 4, "kind": "framework", "gloss": "Criado-Boado's model of monumentalization as domestication of space: systematic translation of cultural perceptions of time and space into the material landscape.", "appears": ["ch3"]}, {"id": "c3-palimpsest", "label": "palimpsest", "group": "social", "chapter": "ch3", "tier": 3, "importance": 3, "kind": "property", "gloss": "Pattern of re-use and re-construction of archaeological landscapes, implying repeated reconstruction of cultural meaning and no single structure expressed by the landscape.", "appears": ["ch3"]}, {"id": "c3-visibility-networks", "label": "structured visibility networks", "group": "social", "chapter": "ch3", "tier": 3, "importance": 4, "kind": "construct", "gloss": "Spatial organization of megaliths as intervisible beacons marking least-effort mobility corridors, embedding navigational premises directly in the material landscape.", "appears": ["ch3"]}, {"id": "c3-serra-do-barbanza", "label": "Serra do Barbanza", "group": "social", "chapter": "ch3", "tier": 2, "importance": 4, "kind": "case", "gloss": "Galician megalithic necropolis whose funerary monuments mark mobility corridors, geological transitions, and solstice orientations; test case for common-ground archaeology.", "appears": ["ch3"]}, {"id": "c3-constraints-on-attention", "label": "constraints over the flow of attention", "group": "social", "chapter": "ch3", "tier": 2, "importance": 4, "kind": "construct", "gloss": "The role any cognitive or material element of social organization plays: constraining agents' attention within the affordance landscape rather than encoding intrinsic meaning.", "appears": ["ch3"]}, {"id": "c4-observables", "label": "observables", "group": "life", "chapter": "ch4", "tier": 1, "importance": 5, "kind": "construct", "gloss": "Abstracted variables effectively measured within a specific physical interaction; each discriminates a system's states only up to equivalence classes of measurement outcomes.", "appears": ["ch4"]}, {"id": "c4-reduced-states", "label": "reduced states / reduced dynamics", "group": "life", "chapter": "ch4", "tier": 2, "importance": 4, "kind": "construct", "gloss": "A system's states reduced to the space actually observable and manipulable via available observables, together with the evolution rule defined over them.", "appears": ["ch4"]}, {"id": "c4-flow-function", "label": "flow function (law of motion)", "group": "life", "chapter": "ch4", "tier": 3, "importance": 3, "kind": "construct", "gloss": "Map with composition axioms formalizing well-defined dynamics over a state space; the general framework of Dynamical Systems Theory.", "appears": ["ch4"]}, {"id": "c4-symmetry-group", "label": "symmetries (symmetry group)", "group": "life", "chapter": "ch4", "tier": 1, "importance": 5, "kind": "construct", "gloss": "Group of transformations over a system's states leaving its reduced dynamics unaffected; a relation between two descriptions of a system, not an intrinsic property.", "appears": ["ch4"]}, {"id": "c4-symmetry-breaking", "label": "symmetry breaking", "group": "life", "chapter": "ch4", "tier": 1, "importance": 5, "kind": "process", "gloss": "Establishment or destruction of constitutive symmetries by a system's own dynamics or interactions; irreversible in system identification, grounding contextual observation.", "appears": ["ch4"]}, {"id": "c4-modelling-relation", "label": "modelling relation", "group": "life", "chapter": "ch4", "tier": 2, "importance": 4, "kind": "construct", "gloss": "Rosen's equivalence between the dynamics of a system and its model, each reduced over their own observables; formalizes abstraction and inter-model relations.", "appears": ["ch4"]}, {"id": "c4-anticipatory-system", "label": "anticipatory system", "group": "life", "chapter": "ch4", "tier": 3, "importance": 2, "kind": "construct", "gloss": "System whose present change of state depends on future circumstances, via an internal model whose time-encoding runs faster than the world it engages.", "appears": ["ch4"]}, {"id": "c4-mechanism-vs-organism", "label": "mechanism vs organism", "group": "life", "chapter": "ch4", "tier": 2, "importance": 4, "kind": "distinction", "gloss": "Rosen's contrast: mechanisms admit a unique maximal, simulable model; organisms, closed to efficient causation, admit no single largest model.", "appears": ["ch4"]}, {"id": "c4-closure-efficient-causation", "label": "closure to efficient causation", "group": "life", "chapter": "ch4", "tier": 2, "importance": 4, "kind": "property", "gloss": "Property of systems whose every component is produced from within the system itself, rather than entailed by a prior external description.", "appears": ["ch4"]}, {"id": "c4-mr-system", "label": "(M,R)-system", "group": "life", "chapter": "ch4", "tier": 3, "importance": 2, "kind": "construct", "gloss": "Rosen's metabolism-repair formalization of self-production, describing the relational structure by which organisms produce their own material organization.", "appears": ["ch4"]}, {"id": "c4-relational-biology", "label": "relational biology", "group": "life", "chapter": "ch4", "tier": 2, "importance": 4, "kind": "framework", "gloss": "Rosen's programme studying a system's dynamics in relation to the class of systems modelling it, formalized through category theory.", "appears": ["ch4"]}, {"id": "c4-thermodynamics-of-measurement", "label": "thermodynamics of measurement", "group": "life", "chapter": "ch4", "tier": 1, "importance": 5, "kind": "framework", "gloss": "Account on which gaining n bits requires exhausting entropy into non-information-bearing degrees of freedom, making observation intrinsically costly.", "appears": ["ch4"]}, {"id": "c4-entropy-exhaust", "label": "entropy exhaust", "group": "life", "chapter": "ch4", "tier": 2, "importance": 4, "kind": "construct", "gloss": "Information necessarily destroyed by measurement; in biological computation it feeds back as non-separable, system-wide adaptive dynamics rather than mere heat dissipation.", "appears": ["ch4"]}, {"id": "c4-preparation-measurement-cycle", "label": "preparation-and-measurement cycle", "group": "life", "chapter": "ch4", "tier": 3, "importance": 4, "kind": "process", "gloss": "Bennett's decomposition of measurement into outcome copying and apparatus reset; in biology the reset is a distributed, non-irreversible reshaping of dynamics.", "appears": ["ch4"]}, {"id": "c4-contextuality-trichotomy", "label": "contextuality 1 / 2 / 3", "group": "life", "chapter": "ch4", "tier": 1, "importance": 5, "kind": "distinction", "gloss": "Three-way distinction: context dependence of behaviour; technical non-commutativity of evolution operators; irreducible production of novel observables reshaping the system itself.", "appears": ["ch4"]}, {"id": "c4-strong-contextuality", "label": "contextuality 3 (strong contextuality)", "group": "life", "chapter": "ch4", "tier": 1, "importance": 5, "kind": "property", "gloss": "The irreducible (re)production of a system's structure through the emergence of novel observables as constitutive variables of its activity.", "appears": ["ch4"]}, {"id": "c4-holographic-screen", "label": "holographic screen", "group": "formal", "chapter": "ch4", "tier": 2, "importance": 4, "kind": "construct", "gloss": "Virtual, purely topological boundary defined by the information transmitted across it, replacing the cFEP's Markov blanket as a section of pre-existing state space.", "appears": ["ch4"]}, {"id": "c4-von-neumann-algebra", "label": "von Neumann algebra", "group": "formal", "chapter": "ch4", "tier": 3, "importance": 3, "kind": "construct", "gloss": "Simplest coherent mathematical structure supporting contextual observation as matrix calculus; also the canonical formal basis of quantum mechanics.", "appears": ["ch4"]}, {"id": "c4-channel-theory", "label": "Channel Theory (information flows)", "group": "formal", "chapter": "ch4", "tier": 3, "importance": 3, "kind": "framework", "gloss": "Barwise and Seligman's theory of information flow reconstructing Shannon channels, used to treat Markov blanket transfer as a classical channel encoding contextual observation.", "appears": ["ch4"]}, {"id": "c4-nonseparability", "label": "entanglement as non-separability of reference frames", "group": "formal", "chapter": "ch4", "tier": 2, "importance": 3, "kind": "property", "gloss": "The rFEP's 'entanglement': non-separability between reference frames rather than ontic states; the information-theoretic expression of dynamical synchronization.", "appears": ["ch4"]}, {"id": "c4-relational-vfe", "label": "VFE as reference-frame misalignment", "group": "formal", "chapter": "ch4", "tier": 3, "importance": 3, "kind": "construct", "gloss": "rFEP redefinition of variational free energy: intrinsic uncertainty from misaligned agent-environment reference frames plus classical inaccuracy from insufficient learning.", "appears": ["ch4"]}, {"id": "c4-gauge-theory", "label": "gauge theory", "group": "formal", "chapter": "ch4", "tier": 2, "importance": 4, "kind": "framework", "gloss": "Theories where local symmetries entail force-carrying fields enforcing them; frames the cFEP as Lagrangian symmetries expressed through precision weighting, and constraints as gauge forces.", "appears": ["ch4"]}, {"id": "c4-boundary-maintenance", "label": "active boundary maintenance", "group": "life", "chapter": "ch4", "tier": 2, "importance": 4, "kind": "process", "gloss": "In the rFEP, persisting as a distinct system requires actively maintaining the boundary as a classical information channel, at non-trivial thermodynamic and informational cost.", "appears": ["ch4"]}, {"id": "c4-organizational-closure", "label": "organizational closure", "group": "life", "chapter": "ch4", "tier": 2, "importance": 4, "kind": "construct", "gloss": "Varela's property of systems constituted by a network of mutually dependent processes forming a recognizable unit; autopoiesis is its biochemical, spatially bounded case.", "appears": ["ch4"]}, {"id": "c4-informational-closure", "label": "informational characterization of closure", "group": "life", "chapter": "ch4", "tier": 2, "importance": 4, "kind": "construct", "gloss": "Closure recast informationally: each constraint belongs to the organization's reference frame and is necessary to observe at least one other constraint within it.", "appears": ["ch4"]}, {"id": "c4-scale-free-biology", "label": "scale-free biology", "group": "life", "chapter": "ch4", "tier": 3, "importance": 3, "kind": "framework", "gloss": "Fields and Levin's account of multi-scale coordination systems adaptively regulating cell activity toward morphological goals, formalized in the information-flow framework.", "appears": ["ch4"]}, {"id": "c5-in-vitro-in-eco", "label": "in vitro / in eco", "group": "philsci", "chapter": "ch5", "tier": 2, "importance": 4, "kind": "distinction", "gloss": "Standing distinction between behaviour measured under controlled laboratory conditions and behaviour in ecological, real-world settings.", "appears": ["ch5"]}, {"id": "c5-psychological-effect", "label": "psychological effect", "group": "philsci", "chapter": "ch5", "tier": 2, "importance": 3, "kind": "construct", "gloss": "Measurable regularity in stimulus-response association extracted statistically from experimental data; properly the object, not the subject, of psychological explanation.", "appears": ["ch5"]}, {"id": "c5-cognitive-bias", "label": "cognitive bias", "group": "mind", "chapter": "ch5", "tier": 3, "importance": 2, "kind": "construct", "gloss": "Systematic local deviation from behaviour normatively expected under decision theory's axioms of rationality, held by behavioural economics to be constitutive of cognition.", "appears": ["ch5"]}, {"id": "c5-framing-effect", "label": "framing effect", "group": "mind", "chapter": "ch5", "tier": 3, "importance": 3, "kind": "case", "gloss": "Reversal of choice under logically equivalent 'saving' versus 'killing' descriptions (Tversky & Kahneman); the chapter's running case for contextual reinterpretation.", "appears": ["ch5"]}, {"id": "c5-surprise-hacking", "label": "surprise-hacking", "group": "philsci", "chapter": "ch5", "tier": 3, "importance": 2, "kind": "construct", "gloss": "Experimental design intentionally drawing attention away from normatively relevant parameters to manufacture documentable deviations from rationality (Felin et al.), premised on an 'all-seeing eye'.", "appears": ["ch5"]}, {"id": "c5-phenomenological-control", "label": "phenomenological control", "group": "mind", "chapter": "ch5", "tier": 2, "importance": 3, "kind": "construct", "gloss": "The varying capacity and disposition to respond to imaginative suggestion by altering the content of one's phenomenal experience (Dienes, Lush).", "appears": ["ch5"]}, {"id": "c5-cognitive-frame-analysis", "label": "cognitive frame analysis", "group": "mind", "chapter": "ch5", "tier": 2, "importance": 4, "kind": "framework", "gloss": "Proposed approach interpreting experimental results as expressions of cognitive frames composed from the experiment's framing choices and the agent's prior world- and self-model.", "appears": ["ch5"]}, {"id": "c5-cognitive-frame", "label": "cognitive frame", "group": "mind", "chapter": "ch5", "tier": 2, "importance": 4, "kind": "construct", "gloss": "Interpretative frame bringing about the world as experienced, born from composition of context with prior constraints; unifies Fields' reference frames and Goffman's frames.", "appears": ["ch5"]}, {"id": "c5-expressive-value", "label": "expressive value", "group": "mind", "chapter": "ch5", "tier": 2, "importance": 4, "kind": "construct", "gloss": "The significance of an act for the agent's social perception and self-model — what engagement expresses about them, beyond what it represents.", "appears": ["ch5"]}, {"id": "c5-mechanistic-explanation", "label": "structural-mechanistic explanation", "group": "philsci", "chapter": "ch5", "tier": 2, "importance": 3, "kind": "framework", "gloss": "Explanation via explicit, plausible hypotheses about the causal structure underlying a phenomenon (Bechtel, Craver); the systemic procedure characteristic of cognitive neuroscience.", "appears": ["ch5"]}, {"id": "c5-naturalism", "label": "naturalism (causal closure)", "group": "philsci", "chapter": "ch5", "tier": 2, "importance": 3, "kind": "principle", "gloss": "Definition of nature as a causally closed domain; by extension, explanation appealing exclusively to plausible natural entities, excluding contextually supervenient regularities.", "appears": ["ch5"]}, {"id": "c5-integrative-pluralism", "label": "integrative pluralism", "group": "philsci", "chapter": "ch5", "tier": 2, "importance": 4, "kind": "framework", "gloss": "Mitchell's commitment to complementary, mutually irreducible models each capturing partial structure of complex systems, integrable into specific explanatory models.", "appears": ["ch5"]}, {"id": "c5-population-dynamics-models", "label": "population dynamics models of cultural evolution", "group": "social", "chapter": "ch5", "tier": 2, "importance": 3, "kind": "framework", "gloss": "Transmission-centred modelling of cultural evolution as differential diffusion of cultural traits inherited via social learning (Cavalli-Sforza & Feldman tradition).", "appears": ["ch5"]}, {"id": "c5-cognitive-agency", "label": "cognitive agency", "group": "social", "chapter": "ch5", "tier": 2, "importance": 4, "kind": "construct", "gloss": "The processes by which individuals experience, understand, integrate, and enact cultural practices — precisely what transmission-centred models abstract away.", "appears": ["ch5"]}, {"id": "c5-blank-concepts", "label": "blank concepts", "group": "formal", "chapter": "ch5", "tier": 3, "importance": 2, "kind": "construct", "gloss": "Hidden states with uniform priors predicting all observations equally (R. Smith et al.), affording concept learning through the agent's own activity in pymdp-style models.", "appears": ["ch5"]}, {"id": "c5-bayesian-model-reduction", "label": "Bayesian model reduction", "group": "formal", "chapter": "ch5", "tier": 3, "importance": 2, "kind": "process", "gloss": "Merging of sufficiently similar perceptive concepts; together with blank concepts, affords the evolution of novel concepts in Active Inference agents.", "appears": ["ch5"]}, {"id": "c5-interoception-exteroception", "label": "interoception / exteroception", "group": "formal", "chapter": "ch5", "tier": 3, "importance": 2, "kind": "distinction", "gloss": "Perception of one's own bodily states versus outside states; their interplay grounds emotion and enables embodied, physiologically regulated agency (Seth).", "appears": ["ch5"]}, {"id": "c5-legibility", "label": "legibility", "group": "social", "chapter": "ch5", "tier": 2, "importance": 4, "kind": "construct", "gloss": "Administrative readability of society and nature; the State's drive to build legible grip over its niche, which reshapes the world it observes (Scott).", "appears": ["ch5"]}, {"id": "c5-administrative-mind", "label": "administration (State cognition)", "group": "social", "chapter": "ch5", "tier": 2, "importance": 3, "kind": "construct", "gloss": "Standardized information systems, legal codes, and specialized personnel constituting the State's most disembodied mechanism of adaptive regulation, analogous to neuronal cognition.", "appears": ["ch5"]}, {"id": "c5-embodied-intelligence", "label": "embodied intelligence", "group": "social", "chapter": "ch5", "tier": 2, "importance": 3, "kind": "construct", "gloss": "Landscapes and socio-material constraints as constitutive, self-produced elements of State-scale thinking, not passive recipients of an external agent's expectations.", "appears": ["ch5"]}, {"id": "c5-anthropocene", "label": "Anthropocene", "group": "social", "chapter": "ch5", "tier": 2, "importance": 3, "kind": "construct", "gloss": "Proposed geological era in which feedback of human activity on the Earth system becomes critical to the maintenance of those very activities.", "appears": ["ch5"]}, {"id": "c5-high-modernism", "label": "high modernism", "group": "social", "chapter": "ch5", "tier": 2, "importance": 3, "kind": "framework", "gloss": "Scott's radical programme for reorganizing society around the view from above: abstract plans drawn by centralized administration and executed by its officers.", "appears": ["ch5"]}, {"id": "c5-techne-metis", "label": "techne vs metis", "group": "social", "chapter": "ch5", "tier": 2, "importance": 4, "kind": "distinction", "gloss": "Techne: abstract, procedural knowledge issued by epistemic authorities; metis: pragmatic, situated knowledge developed by navigating one's ecological niche (Scott).", "appears": ["ch5"]}, {"id": "c5-active-pedagogy", "label": "active pedagogy", "group": "social", "chapter": "ch5", "tier": 2, "importance": 3, "kind": "construct", "gloss": "Student-centred education (e.g. Montessori) where learners choose activities and co-regulate the classroom, developing situated understanding of their power to act.", "appears": ["ch5"]}, {"id": "c5-technical-democracy", "label": "technical democracy", "group": "social", "chapter": "ch5", "tier": 2, "importance": 3, "kind": "construct", "gloss": "Informed public participation in negotiating and arbitrating socio-technical systems, requiring citizens' organizational capacity and cognitive disposition for agency (Callon, Dewey).", "appears": ["ch5"]}, {"id": "c5-low-tech", "label": "low tech", "group": "social", "chapter": "ch5", "tier": 3, "importance": 2, "kind": "construct", "gloss": "Technology simple to implement at communal scale with minimal energetic-ecological footprint, favouring participatory design and mutualist economic organization outside State or capitalist institutions.", "appears": ["ch5"]}, {"id": "co-dst", "label": "Dynamical Systems Theory (DST)", "group": "philsci", "chapter": "concl", "tier": 2, "importance": 4, "kind": "framework", "gloss": "Minimal model of a causally bound physical system: well-defined states following a well-defined law of motion in a well-defined space.", "appears": ["concl"]}, {"id": "co-non-ergodicity", "label": "non-ergodicity of the universe", "group": "life", "chapter": "concl", "tier": 3, "importance": 3, "kind": "property", "gloss": "Kauffman's point that the universe cannot explore all possible configurations (e.g. proteins) at observable scales, undermining law-of-motion entailment for life.", "appears": ["concl"]}, {"id": "co-neurocomputational-functionalism", "label": "neurocomputational functionalism", "group": "mind", "chapter": "concl", "tier": 2, "importance": 3, "kind": "framework", "gloss": "Bechtel's and Piccinini's reconstruction of computationalism: explaining cognition via information-processing mechanisms embedded in multi-scale, relational brain architecture.", "appears": ["concl"]}, {"id": "co-structuralist-explanation", "label": "structuralist account of explanation", "group": "philsci", "chapter": "concl", "tier": 2, "importance": 5, "kind": "principle", "gloss": "Mathematical theories explain what real structure they in fact capture, nothing more and nothing less (Dorato & Felline; applied to FEP via Beni).", "appears": ["concl"]}, {"id": "co-first-principles", "label": "first principles", "group": "philsci", "chapter": "concl", "tier": 2, "importance": 4, "kind": "construct", "gloss": "Fundamental mathematical statements we have good reason to believe true, supplying a language for natural structure and constraints on possible explanations (Colombo & Wright).", "appears": ["concl"]}, {"id": "co-why-how", "label": "why vs how explanations", "group": "philsci", "chapter": "concl", "tier": 2, "importance": 4, "kind": "distinction", "gloss": "Ross's distinction: principles and constraints tell why systems function as they do; mechanistic accounts tell how a specific system works.", "appears": ["concl"]}, {"id": "co-contextual-observation", "label": "contextual observation", "group": "life", "chapter": "concl", "tier": 2, "importance": 4, "kind": "process", "gloss": "rFEP-modelled act by which a system 'observes' self or world, thereby changing the system of constraints defining its own organization.", "appears": ["concl"]}, {"id": "co-control-architecture", "label": "control architecture", "group": "life", "chapter": "concl", "tier": 3, "importance": 3, "kind": "construct", "gloss": "Bich & Bechtel's regulatory structure entailed by autonomous organization, integrating 'observed' parameters of organism or environment that work to maintain it.", "appears": ["concl"]}, {"id": "co-theory-of-change", "label": "theory of change", "group": "social", "chapter": "concl", "tier": 2, "importance": 3, "kind": "process", "gloss": "Built-in dynamic of the common ground: agents reconstructively infer contextual premises while their expressive behaviour adds novel ones, jointly evolving cognitive and social organization.", "appears": ["concl"]}], "edges": [{"s": "expressive-modality", "t": "representational-modality", "type": "contrasts_with"}, {"s": "expressive-modality", "t": "contextuality", "type": "emerges_from"}, {"s": "expressive-modality", "t": "in-ecology-of-practices", "type": "applies_to"}, {"s": "representational-modality", "t": "expressive-modality", "type": "contrasts_with"}, {"s": "representational-modality", "t": "mental-representation", "type": "applies_to"}, {"s": "in-ecology-of-practices", "t": "practice-first", "type": "grounds"}, {"s": "in-second-order-language", "t": "mindshaping", "type": "kind_of"}, {"s": "in-second-order-language", "t": "in-ecology-of-practices", "type": "part_of"}, {"s": "in-alamut", "t": "in-second-order-language", "type": "applies_to"}, {"s": "enaction", "t": "expressive-modality", "type": "grounds"}, {"s": "in-mechanistic-representation", "t": "mental-representation", "type": "grounds"}, {"s": "in-mechanistic-representation", "t": "enaction", "type": "contrasts_with"}, {"s": "sync-diachrony", "t": "in-ecology-of-practices", "type": "applies_to"}, {"s": "common-ground", "t": "sm-common-ground", "type": "kind_of"}, {"s": "common-ground", "t": "c1-pragmatics", "type": "emerges_from"}, {"s": "c1-pragmatics", "t": "common-ground", "type": "grounds"}, {"s": "sm-common-ground", "t": "c2-sif", "type": "emerges_from"}, {"s": "sm-common-ground", "t": "c3-structure-agency", "type": "applies_to"}, {"s": "c2-sif", "t": "aif", "type": "kind_of"}, {"s": "c2-sif", "t": "affordance-landscape", "type": "applies_to"}, {"s": "c3-structure-agency", "t": "in-ecology-of-practices", "type": "applies_to"}, {"s": "c3-frame", "t": "sm-common-ground", "type": "part_of"}, {"s": "c3-frame", "t": "c3-structure-agency", "type": "applies_to"}, {"s": "relational-approach", "t": "contextuality", "type": "grounds"}, {"s": "contextuality", "t": "expressive-modality", "type": "grounds"}, {"s": "constraint", "t": "closure-constraints", "type": "part_of"}, {"s": "closure-constraints", "t": "autopoiesis", "type": "formalizes"}, {"s": "sm-constraints", "t": "constraint", "type": "kind_of"}, {"s": "sm-constraints", "t": "forms-of-life", "type": "grounds"}, {"s": "in-neurodynamic-constraints", "t": "constraint", "type": "kind_of"}, {"s": "in-neurodynamic-constraints", "t": "sm-constraints", "type": "contrasts_with"}, {"s": "in-extended-autonomy", "t": "closure-constraints", "type": "emerges_from"}, {"s": "in-extended-autonomy", "t": "sm-autonomy", "type": "kind_of"}, {"s": "forms-of-life", "t": "closure-constraints", "type": "emerges_from"}, {"s": "c1-computational-functionalism", "t": "mental-representation", "type": "applies_to"}, {"s": "c1-computational-functionalism", "t": "enaction", "type": "contrasts_with"}, {"s": "mental-representation", "t": "c1-computational-functionalism", "type": "grounds"}, {"s": "c1-cognitive-neuroscience", "t": "c1-computational-functionalism", "type": "kind_of"}, {"s": "c1-cognitive-neuroscience", "t": "c1-teleosemantic-representation", "type": "grounds"}, {"s": "c1-4e-cognition", "t": "c1-computational-functionalism", "type": "contrasts_with"}, {"s": "c1-4e-cognition", "t": "enaction", "type": "emerges_from"}, {"s": "c1-affordance", "t": "affordance-landscape", "type": "grounds"}, {"s": "c1-affordance", "t": "mental-representation", "type": "contrasts_with"}, {"s": "enaction", "t": "groundlessness", "type": "grounds"}, {"s": "enaction", "t": "mental-representation", "type": "contrasts_with"}, {"s": "groundlessness", "t": "enaction", "type": "emerges_from"}, {"s": "groundlessness", "t": "cognitive-realism", "type": "contrasts_with"}, {"s": "c1-cartesian-anxiety", "t": "groundlessness", "type": "contrasts_with"}, {"s": "c1-cartesian-anxiety", "t": "cognitive-realism", "type": "applies_to"}, {"s": "c1-parity-principle", "t": "c1-dc-em-framework", "type": "grounds"}, {"s": "c1-dc-em-framework", "t": "c1-parity-principle", "type": "emerges_from"}, {"s": "c1-dc-em-framework", "t": "c1-scaffolded-mind", "type": "contrasts_with"}, {"s": "c1-scaffolded-mind", "t": "c1-niche-construction", "type": "emerges_from"}, {"s": "c1-scaffolded-mind", "t": "c1-dc-em-framework", "type": "contrasts_with"}, {"s": "c1-niche-construction", "t": "c1-scaffolded-mind", "type": "grounds"}, {"s": "c1-niche-construction", "t": "practice-first", "type": "applies_to"}, {"s": "c1-agential-realism", "t": "relational-approach", "type": "kind_of"}, {"s": "c1-agential-realism", "t": "cognitive-realism", "type": "contrasts_with"}, {"s": "c1-intra-action", "t": "c1-agential-realism", "type": "part_of"}, {"s": "c1-material-engagement-theory", "t": "relational-approach", "type": "kind_of"}, {"s": "c1-material-engagement-theory", "t": "enaction", "type": "emerges_from"}, {"s": "expressive-modality", "t": "c1-shared-intentionality", "type": "emerges_from"}, {"s": "c1-shared-intentionality", "t": "expressive-modality", "type": "grounds"}, {"s": "c1-shared-intentionality", "t": "mindshaping", "type": "grounds"}, {"s": "mindshaping", "t": "expressive-modality", "type": "grounds"}, {"s": "c1-holism-problem", "t": "mindshaping", "type": "grounds"}, {"s": "c1-symbolic-indexical", "t": "expressive-modality", "type": "applies_to"}, {"s": "c1-musical-vocalization", "t": "expressive-modality", "type": "applies_to"}, {"s": "c1-musical-vocalization", "t": "c1-shared-intentionality", "type": "enables"}, {"s": "common-ground", "t": "c1-context-content", "type": "grounds"}, {"s": "common-ground", "t": "sm-common-ground", "type": "grounds"}, {"s": "c1-context-content", "t": "expressive-modality", "type": "formalizes"}, {"s": "c1-context-content", "t": "sync-diachrony", "type": "grounds"}, {"s": "c1-accommodation", "t": "common-ground", "type": "part_of"}, {"s": "cognitive-realism", "t": "structural-realism", "type": "emerges_from"}, {"s": "cognitive-realism", "t": "groundlessness", "type": "contrasts_with"}, {"s": "structural-realism", "t": "cognitive-realism", "type": "grounds"}, {"s": "c1-instrumental-realism", "t": "mental-representation", "type": "applies_to"}, {"s": "c1-instrumental-realism", "t": "cognitive-realism", "type": "contrasts_with"}, {"s": "c1-teleosemantic-representation", "t": "mental-representation", "type": "kind_of"}, {"s": "c1-teleosemantic-representation", "t": "c1-cognitive-neuroscience", "type": "part_of"}, {"s": "c1-multi-level-explanation", "t": "c1-cognitive-neuroscience", "type": "part_of"}, {"s": "sync-diachrony", "t": "cognitive-realism", "type": "enables"}, {"s": "sync-diachrony", "t": "c1-context-content", "type": "emerges_from"}, {"s": "aif", "t": "c2-hpc", "type": "kind_of"}, {"s": "aif", "t": "fep", "type": "emerges_from"}, {"s": "fep", "t": "aif", "type": "grounds"}, {"s": "fep", "t": "self-evidencing", "type": "formalizes"}, {"s": "c2-predictive-processing", "t": "c2-forward-model", "type": "contrasts_with"}, {"s": "c2-predictive-processing", "t": "c2-hpc", "type": "grounds"}, {"s": "c2-hpc", "t": "c2-predictive-processing", "type": "kind_of"}, {"s": "c2-hpc", "t": "aif", "type": "grounds"}, {"s": "c2-perceptual-inference", "t": "c2-predictive-processing", "type": "grounds"}, {"s": "c2-forward-model", "t": "c2-perceptual-inference", "type": "part_of"}, {"s": "c2-vfe", "t": "fep", "type": "part_of"}, {"s": "c2-vfe", "t": "self-evidencing", "type": "formalizes"}, {"s": "c2-generative-model", "t": "fep", "type": "part_of"}, {"s": "c2-generative-model", "t": "c2-recognition-distribution", "type": "grounds"}, {"s": "c2-recognition-distribution", "t": "c2-synchronization-manifold", "type": "emerges_from"}, {"s": "c2-recognition-distribution", "t": "mental-representation", "type": "formalizes"}, {"s": "c2-precision", "t": "c2-hpc", "type": "part_of"}, {"s": "c2-precision", "t": "c2-epistemic-pragmatic-action", "type": "enables"}, {"s": "c2-epistemic-pragmatic-action", "t": "aif", "type": "part_of"}, {"s": "self-evidencing", "t": "aif", "type": "part_of"}, {"s": "self-evidencing", "t": "forms-of-life", "type": "applies_to"}, {"s": "markov-blanket", "t": "fep", "type": "part_of"}, {"s": "markov-blanket", "t": "c2-transient-blankets", "type": "contrasts_with"}, {"s": "c2-attracting-distribution", "t": "fep", "type": "part_of"}, {"s": "c2-attracting-distribution", "t": "c2-synchronization-manifold", "type": "grounds"}, {"s": "c2-synchronization-manifold", "t": "c2-attracting-distribution", "type": "emerges_from"}, {"s": "c2-synchronization-manifold", "t": "c2-recognition-distribution", "type": "grounds"}, {"s": "c2-dissipative-conservative-flow", "t": "fep", "type": "part_of"}, {"s": "c2-expected-free-energy", "t": "fep", "type": "part_of"}, {"s": "c2-expected-free-energy", "t": "c2-strange-particles", "type": "enables"}, {"s": "c2-strange-particles", "t": "markov-blanket", "type": "kind_of"}, {"s": "c2-strange-particles", "t": "aif", "type": "enables"}, {"s": "c2-markovian-monism", "t": "fep", "type": "emerges_from"}, {"s": "c2-markovian-monism", "t": "c2-partial-isomorphism", "type": "contrasts_with"}, {"s": "c2-pearl-friston-blankets", "t": "c2-markovian-monism", "type": "applies_to"}, {"s": "c2-pearl-friston-blankets", "t": "markov-blanket", "type": "applies_to"}, {"s": "c2-inference-with-within-model", "t": "c2-markovian-monism", "type": "applies_to"}, {"s": "c2-inference-with-within-model", "t": "c2-pearl-friston-blankets", "type": "grounds"}, {"s": "c2-renormalization", "t": "fep", "type": "emerges_from"}, {"s": "c2-renormalization", "t": "c2-transient-blankets", "type": "enables"}, {"s": "c2-transient-blankets", "t": "markov-blanket", "type": "contrasts_with"}, {"s": "c2-transient-blankets", "t": "autopoiesis", "type": "applies_to"}, {"s": "c2-partial-isomorphism", "t": "structural-realism", "type": "part_of"}, {"s": "c2-partial-isomorphism", "t": "fep", "type": "applies_to"}, {"s": "c2-adaptive-active-inference", "t": "aif", "type": "kind_of"}, {"s": "c2-adaptive-active-inference", "t": "autopoiesis", "type": "applies_to"}, {"s": "c2-sif", "t": "fep", "type": "emerges_from"}, {"s": "c2-sif", "t": "forms-of-life", "type": "applies_to"}, {"s": "c2-sif", "t": "c2-ttom", "type": "contrasts_with"}, {"s": "c2-education-of-attention", "t": "c2-sif", "type": "part_of"}, {"s": "c2-education-of-attention", "t": "c2-landscape-field-affordances", "type": "enables"}, {"s": "c2-landscape-field-affordances", "t": "c2-sif", "type": "part_of"}, {"s": "c2-landscape-field-affordances", "t": "forms-of-life", "type": "emerges_from"}, {"s": "c2-landscape-field-affordances", "t": "affordance-landscape", "type": "kind_of"}, {"s": "c2-optimal-grip", "t": "c2-sif", "type": "part_of"}, {"s": "c2-optimal-grip", "t": "c2-vfe", "type": "emerges_from"}, {"s": "c2-ttom", "t": "aif", "type": "kind_of"}, {"s": "c2-ttom", "t": "existential-stance", "type": "contrasts_with"}, {"s": "c2-regimes-of-attention", "t": "c2-ttom", "type": "part_of"}, {"s": "c2-regimes-of-attention", "t": "c2-education-of-attention", "type": "emerges_from"}, {"s": "existential-stance", "t": "c2-expressive-cognition", "type": "grounds"}, {"s": "existential-stance", "t": "mindshaping", "type": "applies_to"}, {"s": "existential-stance", "t": "c2-ttom", "type": "contrasts_with"}, {"s": "c2-expressive-cognition", "t": "existential-stance", "type": "emerges_from"}, {"s": "c2-expressive-cognition", "t": "expressive-modality", "type": "kind_of"}, {"s": "c2-expressive-cognition", "t": "sm-common-ground", "type": "grounds"}, {"s": "sm-common-ground", "t": "common-ground", "type": "formalizes"}, {"s": "sm-common-ground", "t": "aif", "type": "emerges_from"}, {"s": "c3-premises", "t": "sm-common-ground", "type": "part_of"}, {"s": "c3-premises", "t": "constraint", "type": "kind_of"}, {"s": "c3-accommodation-embedding", "t": "c3-premises", "type": "applies_to"}, {"s": "c3-accommodation-embedding", "t": "sync-diachrony", "type": "formalizes"}, {"s": "c3-practical-premises", "t": "common-ground", "type": "emerges_from"}, {"s": "c3-practical-premises", "t": "c3-practice-first-propaganda", "type": "part_of"}, {"s": "c3-embedded-normativity", "t": "sm-common-ground", "type": "grounds"}, {"s": "c3-embedded-normativity", "t": "aif", "type": "emerges_from"}, {"s": "c3-embedded-normativity", "t": "affordance-landscape", "type": "applies_to"}, {"s": "c3-instruction-of-imagination", "t": "mental-representation", "type": "contrasts_with"}, {"s": "c3-instruction-of-imagination", "t": "sm-common-ground", "type": "grounds"}, {"s": "c3-practice-first-propaganda", "t": "practice-first", "type": "kind_of"}, {"s": "c3-practice-first-propaganda", "t": "c3-practical-premises", "type": "applies_to"}, {"s": "c3-emperors-new-clothes", "t": "c3-practice-first-propaganda", "type": "grounds"}, {"s": "c3-dramaturgic-approach", "t": "c3-frame", "type": "grounds"}, {"s": "c3-frame", "t": "c3-dramaturgic-approach", "type": "part_of"}, {"s": "c3-frame", "t": "sm-common-ground", "type": "kind_of"}, {"s": "c3-structure-agency", "t": "c3-structuration-theory", "type": "grounds"}, {"s": "c3-structure-agency", "t": "c3-morphogenetic-approach", "type": "grounds"}, {"s": "c3-structuration-theory", "t": "c3-structure-agency", "type": "applies_to"}, {"s": "c3-structuration-theory", "t": "c3-morphogenetic-approach", "type": "contrasts_with"}, {"s": "c3-duality-of-structure", "t": "c3-structuration-theory", "type": "part_of"}, {"s": "c3-duality-of-structure", "t": "c3-central-conflation", "type": "contrasts_with"}, {"s": "c3-morphogenetic-approach", "t": "c3-structure-agency", "type": "applies_to"}, {"s": "c3-morphogenetic-approach", "t": "c3-structuration-theory", "type": "contrasts_with"}, {"s": "c3-central-conflation", "t": "c3-morphogenetic-approach", "type": "part_of"}, {"s": "c3-central-conflation", "t": "c3-structuration-theory", "type": "applies_to"}, {"s": "c3-internal-conversation", "t": "c3-morphogenetic-approach", "type": "part_of"}, {"s": "c3-internal-conversation", "t": "existential-stance", "type": "kind_of"}, {"s": "c3-unification-church", "t": "c3-identity-capture", "type": "grounds"}, {"s": "c3-unification-church", "t": "sm-common-ground", "type": "applies_to"}, {"s": "c3-brainwashing-model", "t": "c3-identity-capture", "type": "contrasts_with"}, {"s": "c3-lovebombing", "t": "c3-identity-capture", "type": "part_of"}, {"s": "c3-lovebombing", "t": "c3-social-filtering", "type": "enables"}, {"s": "c3-social-filtering", "t": "c3-identity-capture", "type": "part_of"}, {"s": "c3-total-participation", "t": "c3-identity-capture", "type": "part_of"}, {"s": "c3-identity-capture", "t": "sm-common-ground", "type": "emerges_from"}, {"s": "c3-identity-capture", "t": "existential-stance", "type": "applies_to"}, {"s": "c3-identity-capture", "t": "self-evidencing", "type": "applies_to"}, {"s": "c3-embodied-reflective-self", "t": "c3-identity-capture", "type": "grounds"}, {"s": "c3-embodied-reflective-self", "t": "existential-stance", "type": "applies_to"}, {"s": "c3-structuralism", "t": "sm-common-ground", "type": "contrasts_with"}, {"s": "c3-structuralism", "t": "c3-structural-model-megalithic", "type": "grounds"}, {"s": "c3-post-structuralism", "t": "c3-structuralism", "type": "contrasts_with"}, {"s": "c3-structural-model-megalithic", "t": "c3-structuralism", "type": "emerges_from"}, {"s": "c3-structural-model-megalithic", "t": "c3-serra-do-barbanza", "type": "applies_to"}, {"s": "c3-palimpsest", "t": "c3-serra-do-barbanza", "type": "applies_to"}, {"s": "c3-palimpsest", "t": "c3-structural-model-megalithic", "type": "contrasts_with"}, {"s": "c3-visibility-networks", "t": "c3-serra-do-barbanza", "type": "part_of"}, {"s": "c3-visibility-networks", "t": "c3-premises", "type": "grounds"}, {"s": "c3-serra-do-barbanza", "t": "sm-common-ground", "type": "grounds"}, {"s": "c3-constraints-on-attention", "t": "constraint", "type": "kind_of"}, {"s": "c3-constraints-on-attention", "t": "affordance-landscape", "type": "applies_to"}, {"s": "c3-constraints-on-attention", "t": "c3-premises", "type": "grounds"}, {"s": "c4-observables", "t": "c4-reduced-states", "type": "grounds"}, {"s": "c4-observables", "t": "c4-relational-biology", "type": "part_of"}, {"s": "c4-reduced-states", "t": "c4-observables", "type": "emerges_from"}, {"s": "c4-reduced-states", "t": "c4-flow-function", "type": "grounds"}, {"s": "c4-flow-function", "t": "newtonian-paradigm", "type": "formalizes"}, {"s": "c4-flow-function", "t": "cfep", "type": "grounds"}, {"s": "c4-flow-function", "t": "c4-strong-contextuality", "type": "contrasts_with"}, {"s": "c4-symmetry-group", "t": "c4-flow-function", "type": "grounds"}, {"s": "c4-symmetry-group", "t": "c4-gauge-theory", "type": "grounds"}, {"s": "c4-symmetry-breaking", "t": "c4-thermodynamics-of-measurement", "type": "emerges_from"}, {"s": "c4-symmetry-breaking", "t": "c4-strong-contextuality", "type": "grounds"}, {"s": "c4-symmetry-breaking", "t": "c4-symmetry-group", "type": "applies_to"}, {"s": "c4-modelling-relation", "t": "c4-observables", "type": "emerges_from"}, {"s": "c4-modelling-relation", "t": "c4-relational-biology", "type": "grounds"}, {"s": "c4-anticipatory-system", "t": "c4-modelling-relation", "type": "emerges_from"}, {"s": "c4-anticipatory-system", "t": "newtonian-paradigm", "type": "contrasts_with"}, {"s": "c4-mechanism-vs-organism", "t": "c4-relational-biology", "type": "part_of"}, {"s": "c4-mechanism-vs-organism", "t": "c4-closure-efficient-causation", "type": "grounds"}, {"s": "c4-closure-efficient-causation", "t": "autopoiesis", "type": "formalizes"}, {"s": "c4-closure-efficient-causation", "t": "newtonian-paradigm", "type": "contrasts_with"}, {"s": "c4-mr-system", "t": "c4-closure-efficient-causation", "type": "formalizes"}, {"s": "c4-relational-biology", "t": "relational-approach", "type": "kind_of"}, {"s": "c4-relational-biology", "t": "newtonian-paradigm", "type": "contrasts_with"}, {"s": "c4-thermodynamics-of-measurement", "t": "c4-entropy-exhaust", "type": "grounds"}, {"s": "c4-thermodynamics-of-measurement", "t": "c4-strong-contextuality", "type": "grounds"}, {"s": "c4-entropy-exhaust", "t": "c4-thermodynamics-of-measurement", "type": "emerges_from"}, {"s": "c4-entropy-exhaust", "t": "c4-nonseparability", "type": "grounds"}, {"s": "c4-preparation-measurement-cycle", "t": "c4-thermodynamics-of-measurement", "type": "part_of"}, {"s": "c4-preparation-measurement-cycle", "t": "aif", "type": "applies_to"}, {"s": "c4-contextuality-trichotomy", "t": "contextuality", "type": "applies_to"}, {"s": "c4-contextuality-trichotomy", "t": "c4-strong-contextuality", "type": "grounds"}, {"s": "c4-strong-contextuality", "t": "contextuality", "type": "kind_of"}, {"s": "c4-strong-contextuality", "t": "participatory-realism", "type": "grounds"}, {"s": "c4-strong-contextuality", "t": "newtonian-paradigm", "type": "contrasts_with"}, {"s": "c4-holographic-screen", "t": "markov-blanket", "type": "contrasts_with"}, {"s": "c4-holographic-screen", "t": "rfep", "type": "part_of"}, {"s": "reference-frames", "t": "rfep", "type": "part_of"}, {"s": "reference-frames", "t": "c4-strong-contextuality", "type": "grounds"}, {"s": "reference-frames", "t": "common-ground", "type": "applies_to"}, {"s": "c4-von-neumann-algebra", "t": "c4-contextuality-trichotomy", "type": "formalizes"}, {"s": "c4-von-neumann-algebra", "t": "rfep", "type": "part_of"}, {"s": "c4-channel-theory", "t": "rfep", "type": "part_of"}, {"s": "c4-nonseparability", "t": "rfep", "type": "part_of"}, {"s": "c4-nonseparability", "t": "c4-entropy-exhaust", "type": "emerges_from"}, {"s": "c4-relational-vfe", "t": "rfep", "type": "part_of"}, {"s": "c4-relational-vfe", "t": "cfep", "type": "contrasts_with"}, {"s": "c4-gauge-theory", "t": "c4-symmetry-group", "type": "emerges_from"}, {"s": "c4-gauge-theory", "t": "cfep", "type": "applies_to"}, {"s": "c4-gauge-theory", "t": "constraint", "type": "applies_to"}, {"s": "c4-boundary-maintenance", "t": "rfep", "type": "part_of"}, {"s": "c4-boundary-maintenance", "t": "self-evidencing", "type": "applies_to"}, {"s": "participatory-realism", "t": "structural-realism", "type": "kind_of"}, {"s": "participatory-realism", "t": "c4-strong-contextuality", "type": "emerges_from"}, {"s": "c2-partial-isomorphism", "t": "structural-realism", "type": "kind_of"}, {"s": "c2-partial-isomorphism", "t": "participatory-realism", "type": "grounds"}, {"s": "c4-organizational-closure", "t": "autopoiesis", "type": "kind_of"}, {"s": "c4-organizational-closure", "t": "closure-constraints", "type": "grounds"}, {"s": "constraint", "t": "closure-constraints", "type": "grounds"}, {"s": "constraint", "t": "c4-symmetry-breaking", "type": "enables"}, {"s": "c4-informational-closure", "t": "closure-constraints", "type": "formalizes"}, {"s": "c4-informational-closure", "t": "reference-frames", "type": "emerges_from"}, {"s": "c4-scale-free-biology", "t": "c4-informational-closure", "type": "applies_to"}, {"s": "c4-scale-free-biology", "t": "rfep", "type": "emerges_from"}, {"s": "sm-constraints", "t": "sm-common-ground", "type": "emerges_from"}, {"s": "sm-constraints", "t": "sm-autonomy", "type": "grounds"}, {"s": "sm-autonomy", "t": "closure-constraints", "type": "kind_of"}, {"s": "sm-autonomy", "t": "forms-of-life", "type": "grounds"}, {"s": "sm-autonomy", "t": "autopoiesis", "type": "contrasts_with"}, {"s": "c5-in-vitro-in-eco", "t": "c5-psychological-effect", "type": "applies_to"}, {"s": "c5-psychological-effect", "t": "c5-mechanistic-explanation", "type": "contrasts_with"}, {"s": "c5-cognitive-bias", "t": "c5-psychological-effect", "type": "kind_of"}, {"s": "c5-framing-effect", "t": "c5-cognitive-bias", "type": "kind_of"}, {"s": "c5-framing-effect", "t": "c5-expressive-value", "type": "applies_to"}, {"s": "c5-surprise-hacking", "t": "c5-cognitive-bias", "type": "applies_to"}, {"s": "c5-phenomenological-control", "t": "c5-psychological-effect", "type": "applies_to"}, {"s": "c5-phenomenological-control", "t": "c5-cognitive-frame", "type": "grounds"}, {"s": "c5-cognitive-frame-analysis", "t": "contextuality", "type": "emerges_from"}, {"s": "c5-cognitive-frame-analysis", "t": "c5-psychological-effect", "type": "applies_to"}, {"s": "c5-cognitive-frame", "t": "reference-frames", "type": "kind_of"}, {"s": "c5-cognitive-frame", "t": "c5-cognitive-frame-analysis", "type": "part_of"}, {"s": "c5-expressive-value", "t": "expressive-modality", "type": "kind_of"}, {"s": "c5-expressive-value", "t": "c5-cognitive-frame-analysis", "type": "enables"}, {"s": "c5-mechanistic-explanation", "t": "c5-naturalism", "type": "kind_of"}, {"s": "c5-naturalism", "t": "c5-mechanistic-explanation", "type": "grounds"}, {"s": "c5-integrative-pluralism", "t": "relational-approach", "type": "applies_to"}, {"s": "c5-integrative-pluralism", "t": "c5-cognitive-frame-analysis", "type": "grounds"}, {"s": "c5-population-dynamics-models", "t": "c5-cognitive-agency", "type": "contrasts_with"}, {"s": "c5-population-dynamics-models", "t": "open-endedness", "type": "contrasts_with"}, {"s": "c5-cognitive-agency", "t": "open-endedness", "type": "grounds"}, {"s": "c5-cognitive-agency", "t": "practice-first", "type": "applies_to"}, {"s": "c5-blank-concepts", "t": "open-endedness", "type": "enables"}, {"s": "c5-blank-concepts", "t": "aif", "type": "part_of"}, {"s": "c5-bayesian-model-reduction", "t": "c5-blank-concepts", "type": "enables"}, {"s": "c5-interoception-exteroception", "t": "c5-cognitive-agency", "type": "enables"}, {"s": "c5-legibility", "t": "c5-administrative-mind", "type": "enables"}, {"s": "c5-legibility", "t": "sm-constraints", "type": "applies_to"}, {"s": "c5-administrative-mind", "t": "sm-autonomy", "type": "part_of"}, {"s": "c5-administrative-mind", "t": "c5-legibility", "type": "enables"}, {"s": "c5-embodied-intelligence", "t": "sm-constraints", "type": "kind_of"}, {"s": "c5-embodied-intelligence", "t": "sm-autonomy", "type": "part_of"}, {"s": "c5-anthropocene", "t": "c5-high-modernism", "type": "emerges_from"}, {"s": "c5-high-modernism", "t": "c5-legibility", "type": "applies_to"}, {"s": "c5-high-modernism", "t": "c5-active-pedagogy", "type": "contrasts_with"}, {"s": "c5-techne-metis", "t": "c5-high-modernism", "type": "applies_to"}, {"s": "c5-techne-metis", "t": "c5-technical-democracy", "type": "grounds"}, {"s": "c5-active-pedagogy", "t": "c5-technical-democracy", "type": "enables"}, {"s": "c5-active-pedagogy", "t": "affordance-landscape", "type": "applies_to"}, {"s": "c5-technical-democracy", "t": "c5-anthropocene", "type": "applies_to"}, {"s": "c5-low-tech", "t": "c5-technical-democracy", "type": "enables"}, {"s": "c5-low-tech", "t": "c5-techne-metis", "type": "applies_to"}, {"s": "newtonian-paradigm", "t": "relational-approach", "type": "contrasts_with"}, {"s": "co-dst", "t": "fep", "type": "grounds"}, {"s": "co-dst", "t": "newtonian-paradigm", "type": "part_of"}, {"s": "co-non-ergodicity", "t": "relational-approach", "type": "grounds"}, {"s": "co-non-ergodicity", "t": "newtonian-paradigm", "type": "contrasts_with"}, {"s": "co-neurocomputational-functionalism", "t": "mental-representation", "type": "kind_of"}, {"s": "co-neurocomputational-functionalism", "t": "enaction", "type": "contrasts_with"}, {"s": "co-structuralist-explanation", "t": "structural-realism", "type": "emerges_from"}, {"s": "co-structuralist-explanation", "t": "fep", "type": "applies_to"}, {"s": "co-first-principles", "t": "fep", "type": "applies_to"}, {"s": "co-first-principles", "t": "co-why-how", "type": "enables"}, {"s": "co-why-how", "t": "cfep", "type": "applies_to"}, {"s": "co-why-how", "t": "rfep", "type": "applies_to"}, {"s": "co-contextual-observation", "t": "rfep", "type": "part_of"}, {"s": "co-contextual-observation", "t": "closure-constraints", "type": "applies_to"}, {"s": "co-contextual-observation", "t": "contextuality", "type": "grounds"}, {"s": "co-control-architecture", "t": "autopoiesis", "type": "part_of"}, {"s": "co-control-architecture", "t": "rfep", "type": "applies_to"}, {"s": "sm-premise", "t": "sm-common-ground", "type": "part_of"}, {"s": "co-theory-of-change", "t": "sm-common-ground", "type": "part_of"}, {"s": "co-theory-of-change", "t": "expressive-modality", "type": "emerges_from"}, {"s": "c3-embedded-normativity", "t": "co-theory-of-change", "type": "grounds"}, {"s": "c3-embedded-normativity", "t": "sm-common-ground", "type": "emerges_from"}, {"s": "cfep", "t": "fep", "type": "kind_of"}, {"s": "rfep", "t": "fep", "type": "kind_of"}, {"s": "cfep", "t": "rfep", "type": "contrasts_with"}, {"s": "cfep", "t": "newtonian-paradigm", "type": "emerges_from"}, {"s": "rfep", "t": "contextuality", "type": "formalizes"}, {"s": "rfep", "t": "relational-approach", "type": "emerges_from"}, {"s": "structural-realism", "t": "fep", "type": "applies_to"}, {"s": "contextuality", "t": "open-endedness", "type": "grounds"}, {"s": "contextuality", "t": "newtonian-paradigm", "type": "contrasts_with"}, {"s": "aif", "t": "sm-common-ground", "type": "grounds"}, {"s": "sm-autonomy", "t": "closure-constraints", "type": "emerges_from"}, {"s": "sm-autonomy", "t": "forms-of-life", "type": "applies_to"}, {"s": "forms-of-life", "t": "sm-common-ground", "type": "emerges_from"}, {"s": "affordance-landscape", "t": "aif", "type": "emerges_from"}, {"s": "cfep", "t": "representational-modality", "type": "formalizes"}, {"s": "rfep", "t": "expressive-modality", "type": "formalizes"}, {"s": "representational-modality", "t": "sync-diachrony", "type": "grounds"}, {"s": "expressive-modality", "t": "sync-diachrony", "type": "grounds"}, {"s": "mental-representation", "t": "representational-modality", "type": "grounds"}, {"s": "existential-stance", "t": "expressive-modality", "type": "grounds"}, {"s": "open-endedness", "t": "expressive-modality", "type": "emerges_from"}, {"s": "autopoiesis", "t": "fep", "type": "contrasts_with"}, {"s": "reference-frames", "t": "sm-common-ground", "type": "formalizes"}, {"s": "self-evidencing", "t": "fep", "type": "emerges_from"}, {"s": "practice-first", "t": "sm-common-ground", "type": "emerges_from"}, {"s": "cognitive-realism", "t": "structural-realism", "type": "kind_of"}]};
+const params = new URLSearchParams(location.search);
+const STATIC = params.has('static');
+if (STATIC) document.getElementById('root').classList.add('static');
+if (params.get('theme')) document.documentElement.dataset.theme = params.get('theme');
+
+const nodesById = {}; DATA.nodes.forEach(n => nodesById[n.id] = n);
+const chById = {}; DATA.chapters.forEach(c => chById[c.id] = c);
+const groupsById = {}; DATA.groups.forEach(g => groupsById[g.id] = g);
+let tierLevel = STATIC ? 3 : (params.get('tier') ? +params.get('tier') : 2);
+let selected = null;
+
+const W = 2200, H = 1650;
+const scene = document.getElementById('scene'), canvas = document.getElementById('canvas'), world = document.getElementById('world');
+const cols = document.getElementById('cols'), colsvg = document.getElementById('colsvg'), colnodes = document.getElementById('colnodes');
+let viewMode = params.get('view') === 'columns' && !STATIC ? 'cols' : 'net';
+document.getElementById('title').textContent = DATA.title;
+document.getElementById('subtitle').textContent = DATA.subtitle;
+scene.setAttribute('width', W); scene.setAttribute('height', H);
+world.style.width = W + 'px'; world.style.height = H + 'px';
+
+const ANCHORS = {
+  formal:  { x: W * 0.20, y: H * 0.22 },
+  philsci: { x: W * 0.78, y: H * 0.16 },
+  mind:    { x: W * 0.82, y: H * 0.64 },
+  life:    { x: W * 0.47, y: H * 0.47 },
+  social:  { x: W * 0.22, y: H * 0.80 }
+};
+function radius(n) { return (n.tier === 1 ? 13 : n.tier === 2 ? 8 : 5) + n.importance * 3.6; }
+
+const sim = new ForceSim({
+  W, H,
+  anchor: n => ANCHORS[n.group],
+  linkDist: (a, b) => a.group === b.group ? 165 : 330,
+  repulsion: 9500,
+  collidePad: 56
+});
+
+const view = makePanZoom(canvas, world, t => !!(t.closest && (t.closest('g.node') || t.closest('.cnode') || t.closest('.chapter-head'))));
+
+let visNodes = [], visLinks = [];
+let gZones, gEdges, gNodes;
+
+function rebuild(keepPositions) {
+  visNodes = DATA.nodes.filter(n => n.tier <= tierLevel);
+  const ids = new Set(visNodes.map(n => n.id));
+  visLinks = DATA.edges.filter(e => ids.has(e.s) && ids.has(e.t)).map(e => ({ ...e }));
+  visNodes.forEach(n => { n.r = radius(n); });
+  visLinks.forEach(l => { l._s = nodesById[l.s]; l._t = nodesById[l.t]; });
+  sim.setData(visNodes, visLinks, keepPositions);
+  buildDom();
+  if (STATIC) { sim.settle(600); }
+  updateButtons();
+  applySelection();
+  applySearch();
+}
+
+function buildDom() {
+  let defs = '<defs>' + Object.keys(DATA.edgeTypes).map(t =>
+    `<marker id="arr-${t}" class="m-${t}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z"/></marker>`).join('') + '</defs>';
+  let zones = DATA.groups.map(g => `<path class="zone" data-g="${g.id}" d=""/><text class="zone-label" data-g="${g.id}" text-anchor="middle">${g.label}</text>`).join('');
+  let edges = visLinks.map((l, i) => {
+    const et = DATA.edgeTypes[l.type];
+    return `<path class="edge e-${l.type}" data-i="${i}" data-s="${l.s}" data-t="${l.t}"${et.dash ? ` stroke-dasharray="${et.dash}"` : ''} marker-end="url(#arr-${l.type})"/>`;
+  }).join('');
+  let nodes = visNodes.map(n => {
+    const lines = wrapText(n.label, n.tier === 1 ? 118 : 100);
+    const cls = n.tier === 1 ? 'big' : '';
+    return `<g class="node t${n.tier}" data-id="${n.id}">
+      <circle class="c" r="${n.r}" fill="var(--ch-${chById[n.chapter].color})"/>
+      <circle class="pinring" r="${n.r + 4}" style="display:none"/>
+      ${lines.map((l, i) => `<text class="${cls}" y="${n.r + 12 + i * 12}">${l.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</text>`).join('')}
+    </g>`;
+  }).join('');
+  scene.innerHTML = defs + `<g id="zg">${zones}</g><g id="eg">${edges}</g><g id="ng">${nodes}</g>`;
+  gZones = scene.querySelector('#zg'); gEdges = scene.querySelector('#eg'); gNodes = scene.querySelector('#ng');
+  gNodes.querySelectorAll('g.node').forEach(g => {
+    g.addEventListener('pointerdown', ev => startDrag(ev, g));
+    g.addEventListener('dblclick', ev => { ev.stopPropagation(); togglePin(g.dataset.id); });
+    g.addEventListener('pointerenter', ev => showTip(ev, g.dataset.id));
+    g.addEventListener('pointermove', ev => moveTip(ev));
+    g.addEventListener('pointerleave', hideTip);
+  });
+  renderFrame(true);
+}
+
+function renderFrame(force) {
+  if (!gNodes) return;
+  gNodes.querySelectorAll('g.node').forEach(g => {
+    const n = nodesById[g.dataset.id];
+    g.setAttribute('transform', `translate(${n.x.toFixed(1)},${n.y.toFixed(1)})`);
+    g.querySelector('.pinring').style.display = (n.fx != null && !g.classList.contains('dragging')) ? '' : 'none';
+  });
+  gEdges.querySelectorAll('path.edge').forEach(p => {
+    const l = visLinks[+p.dataset.i];
+    const s = l._s, t = l._t;
+    const dx = t.x - s.x, dy = t.y - s.y; const d = Math.hypot(dx, dy) || 1;
+    const sx = s.x + dx / d * (s.r + 2), sy = s.y + dy / d * (s.r + 2);
+    const tx = t.x - dx / d * (t.r + 6), ty = t.y - dy / d * (t.r + 6);
+    const mx = (sx + tx) / 2 - dy / d * 16, my = (sy + ty) / 2 + dx / d * 16;
+    p.setAttribute('d', `M${sx.toFixed(1)},${sy.toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${tx.toFixed(1)},${ty.toFixed(1)}`);
+  });
+  DATA.groups.forEach(g => {
+    const pts = visNodes.filter(n => n.group === g.id).map(n => [n.x, n.y]);
+    const path = gZones.querySelector(`path[data-g="${g.id}"]`);
+    const lbl = gZones.querySelector(`text[data-g="${g.id}"]`);
+    if (!pts.length) { path.setAttribute('d', ''); lbl.textContent = ''; return; }
+    path.setAttribute('d', hullPath(pts, 62));
+    const cx = pts.reduce((s, p) => s + p[0], 0) / pts.length;
+    const topY = Math.min(...pts.map(p => p[1]));
+    lbl.setAttribute('x', cx); lbl.setAttribute('y', topY - 76);
+    lbl.textContent = groupsById[g.id].label;
+  });
+}
+
+// neighbourhood (parent/child edge) highlight on hover
+function hoverHl(id) {
+  const apply = (container, groupEl) => {
+    if (!container) return;
+    let any = false;
+    container.querySelectorAll('path.edge').forEach(p => {
+      const on = !!id && (p.dataset.s === id || p.dataset.t === id);
+      p.classList.toggle('hhl', on);
+      if (on) any = true;
+    });
+    if (groupEl) groupEl.classList.toggle('hovering', !!id && any);
+  };
+  if (gEdges) apply(gEdges, gEdges);
+  apply(colsvg, cols);
+}
+
+// tooltip
+const tipEl = document.getElementById('tooltip');
+function showTip(ev, id) {
+  if (dragging) return;
+  hoverHl(id);
+  const n = nodesById[id];
+  const g = groupsById[n.group];
+  tipEl.style.setProperty('--ttc', `var(--ch-${chById[n.chapter].color})`);
+  tipEl.innerHTML = `<div class="tt-kicker">${g.label} · ${chById[n.chapter].label}</div>
+    <div class="tt-label">${n.label}</div>${n.gloss}
+    <div class="tt-more">Click for relations &amp; details · drag to displace</div>`;
+  tipEl.style.display = 'block';
+  moveTip(ev);
+}
+function moveTip(ev) {
+  if (tipEl.style.display === 'none') return;
+  const pad = 14;
+  let x = ev.clientX + pad, y = ev.clientY + pad;
+  const r = tipEl.getBoundingClientRect();
+  if (x + r.width > innerWidth - 8) x = ev.clientX - r.width - pad;
+  if (y + r.height > innerHeight - 8) y = ev.clientY - r.height - pad;
+  tipEl.style.left = x + 'px'; tipEl.style.top = y + 'px';
+}
+function hideTip() { tipEl.style.display = 'none'; if (!dragging) hoverHl(null); }
+
+// drag
+let dragging = null;
+let suppressClick = false; // pointer capture retargets the post-release click to the canvas — ignore it
+function worldCoords(ev) {
+  const r = canvas.getBoundingClientRect();
+  return { x: (ev.clientX - r.left - view.x) / view.k, y: (ev.clientY - r.top - view.y) / view.k };
+}
+function startDrag(ev, g) {
+  ev.stopPropagation();
+  hideTip();
+  const n = nodesById[g.dataset.id];
+  const wasPinned = n.fx != null;
+  dragging = { n, g, moved: false, wasPinned, sx: ev.clientX, sy: ev.clientY };
+  g.classList.add('dragging');
+  hoverHl(n.id);
+  canvas.setPointerCapture(ev.pointerId);
+  const move = e2 => {
+    // a press only becomes a drag after clearly moving — keeps clicks reliable
+    if (!dragging.moved && Math.hypot(e2.clientX - dragging.sx, e2.clientY - dragging.sy) < 5) return;
+    dragging.moved = true;
+    const p = worldCoords(e2);
+    n.fx = p.x; n.fy = p.y;
+    sim.alpha = Math.max(sim.alpha, 0.45);
+  };
+  const up = e2 => {
+    canvas.removeEventListener('pointermove', move);
+    canvas.removeEventListener('pointerup', up);
+    g.classList.remove('dragging');
+    if (dragging.moved) {
+      if (!dragging.wasPinned) { delete n.fx; delete n.fy; }
+      sim.alpha = Math.max(sim.alpha, 0.35);
+    } else {
+      select(n.id);
+    }
+    dragging = null;
+    hoverHl(null);
+    suppressClick = true;
+    setTimeout(() => { suppressClick = false; }, 60);
+  };
+  canvas.addEventListener('pointermove', move);
+  canvas.addEventListener('pointerup', up);
+}
+function togglePin(id) {
+  const n = nodesById[id];
+  if (n.fx != null) { delete n.fx; delete n.fy; sim.alpha = Math.max(sim.alpha, 0.3); }
+  else { n.fx = n.x; n.fy = n.y; }
+  renderFrame(true);
+}
+
+// animation loop
+function loop() {
+  if (viewMode === 'net') {
+    if (!STATIC && sim.alpha > 0.004) { sim.tick(); renderFrame(); }
+    else if (dragging) { renderFrame(); }
+  }
+  requestAnimationFrame(loop);
+}
+
+/* ================= COLUMNS VIEW ================= */
+const COL_W = 250, COL_GAP = 26, CPAD = 40, CHEAD_H = 34, CVGAP = 11;
+function renderCols() {
+  colnodes.innerHTML = ''; colsvg.innerHTML = '';
+  const vis = DATA.nodes.filter(n => n.tier <= tierLevel);
+  const columns = DATA.chapters.map((ch, i) => ({
+    ch, x: CPAD + i * (COL_W + COL_GAP),
+    nodes: vis.filter(n => n.chapter === ch.id).sort((a, b) =>
+      a.tier !== b.tier ? a.tier - b.tier : (a.importance !== b.importance ? b.importance - a.importance : a.label.localeCompare(b.label)))
+  }));
+  const totalW = CPAD * 2 + DATA.chapters.length * COL_W + (DATA.chapters.length - 1) * COL_GAP;
+  const topY = CPAD;
+  let maxBottom = topY;
+  columns.forEach(col => {
+    const total = DATA.nodes.filter(n => n.chapter === col.ch.id).length;
+    const head = document.createElement('div');
+    head.className = 'chapter-head';
+    head.style.setProperty('--chc', `var(--ch-${col.ch.color})`);
+    head.style.left = col.x + 'px'; head.style.top = topY + 'px'; head.style.width = COL_W + 'px';
+    head.style.cursor = 'default';
+    head.innerHTML = `<span>${col.ch.label}</span><span class="count">${col.nodes.length}${col.nodes.length < total ? ' / ' + total : ''} concepts</span>`;
+    head.title = 'Concepts are placed under the chapter where they are introduced or systematized. Use the Core / Supporting / All buttons to change depth.';
+    colnodes.appendChild(head);
+    let y = topY + CHEAD_H + 8;
+    col.nodes.forEach(n => {
+      const el = document.createElement('div');
+      el.className = 'cnode' + (n.tier === 1 ? ' t1' : '');
+      el.style.setProperty('--chc', `var(--ch-${chById[n.chapter].color})`);
+      el.dataset.id = n.id;
+      el.style.width = COL_W + 'px'; el.style.left = col.x + 'px'; el.style.top = y + 'px';
+      const dots = '●'.repeat(n.importance) + '○'.repeat(5 - n.importance);
+      el.innerHTML = `<div class="meta"><span class="kind">${n.kind}</span><span class="dots" title="importance ${n.importance}/5">${dots}</span></div>${n.label}<div class="grp">${groupsById[n.group].label}${n.appears.length > 1 ? ' · also in ' + n.appears.filter(c => c !== n.chapter).map(c => chById[c] ? chById[c].label.replace(/ —.*/, '') : c).join(', ') : ''}</div>`;
+      el.onclick = e => { e.stopPropagation(); select(n.id); };
+      el.addEventListener('pointerenter', ev => showTip(ev, n.id));
+      el.addEventListener('pointermove', ev => moveTip(ev));
+      el.addEventListener('pointerleave', hideTip);
+      colnodes.appendChild(el);
+      n._cx = col.x; n._cy = y; n._cw = COL_W; n._ch = el.offsetHeight;
+      y += el.offsetHeight + CVGAP;
+    });
+    maxBottom = Math.max(maxBottom, y);
+  });
+  const totalH = maxBottom + CPAD;
+  cols.style.width = totalW + 'px'; cols.style.height = totalH + 'px';
+  if (viewMode === 'cols') { world.style.width = totalW + 'px'; world.style.height = totalH + 'px'; }
+  colsvg.setAttribute('width', totalW); colsvg.setAttribute('height', totalH);
+  const ids = new Set(vis.map(n => n.id));
+  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  defs.innerHTML = Object.keys(DATA.edgeTypes).map(t =>
+    `<marker id="carr-${t}" class="m-${t}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z"/></marker>`).join('');
+  colsvg.appendChild(defs);
+  DATA.edges.forEach(e => {
+    if (!ids.has(e.s) || !ids.has(e.t)) return;
+    const s = nodesById[e.s], t = nodesById[e.t];
+    const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    p.setAttribute('d', colEdgePath(s, t));
+    p.setAttribute('class', `edge e-${e.type}`);
+    const et = DATA.edgeTypes[e.type];
+    if (et.dash) p.setAttribute('stroke-dasharray', et.dash);
+    p.setAttribute('marker-end', `url(#carr-${e.type})`);
+    p.dataset.s = e.s; p.dataset.t = e.t;
+    colsvg.appendChild(p);
+  });
+  applySelection(); applySearch();
+}
+function colEdgePath(s, t) {
+  const sc = { x: s._cx + s._cw / 2, y: s._cy + s._ch / 2 };
+  const tc = { x: t._cx + t._cw / 2, y: t._cy + t._ch / 2 };
+  let sx, sy, tx, ty;
+  if (Math.abs(sc.x - tc.x) < 10) {
+    sx = s._cx + s._cw; sy = sc.y; tx = t._cx + t._cw; ty = tc.y;
+    const bow = 42 + Math.abs(sc.y - tc.y) * 0.06;
+    return `M${sx},${sy} C${sx + bow},${sy} ${tx + bow},${ty} ${tx + 3},${ty}`;
+  }
+  if (sc.x < tc.x) { sx = s._cx + s._cw; tx = t._cx - 3; } else { sx = s._cx; tx = t._cx + t._cw + 3; }
+  sy = sc.y; ty = tc.y;
+  const dx = (tx - sx) * 0.45;
+  return `M${sx},${sy} C${sx + dx},${sy} ${tx - dx},${ty} ${tx},${ty}`;
+}
+function setView(v) {
+  viewMode = v;
+  cols.style.display = v === 'cols' ? '' : 'none';
+  scene.style.display = v === 'net' ? '' : 'none';
+  document.getElementById('net-controls').style.display = v === 'net' ? '' : 'none';
+  document.getElementById('btn-view-net').classList.toggle('on', v === 'net');
+  document.getElementById('btn-view-cols').classList.toggle('on', v === 'cols');
+  document.getElementById('hint').textContent = v === 'net'
+    ? 'Drag a node to displace it and watch the network respond · double-click to pin/unpin · size = importance · fill = chapter · zones = thematic domains'
+    : 'Concepts sit under the chapter where they are introduced or systematized · hover for the gloss, click for relations · Core / Supporting / All sets depth';
+  if (v === 'cols') { renderCols(); }
+  else {
+    world.style.width = W + 'px'; world.style.height = H + 'px';
+    renderFrame(true);
+    sim.alpha = Math.max(sim.alpha, 0.2);
+  }
+  applySelection(); applySearch(); fit();
+}
+
+function select(id) { selected = (selected === id) ? null : id; applySelection(); renderPanel(); }
+function applySelection() {
+  const conn = new Set();
+  if (selected) {
+    conn.add(selected);
+    DATA.edges.forEach(e => { if (e.s === selected) conn.add(e.t); if (e.t === selected) conn.add(e.s); });
+  }
+  if (gNodes) {
+    gNodes.querySelectorAll('g.node').forEach(g => {
+      g.classList.toggle('sel', g.dataset.id === selected);
+      g.classList.toggle('dim', !!selected && !conn.has(g.dataset.id));
+    });
+    gEdges.classList.toggle('faded', !!selected);
+    gEdges.querySelectorAll('path.edge').forEach(p => p.classList.toggle('hl', !!selected && (p.dataset.s === selected || p.dataset.t === selected)));
+  }
+  colnodes.querySelectorAll('.cnode').forEach(el => {
+    el.classList.toggle('sel', el.dataset.id === selected);
+    el.classList.toggle('dim', !!selected && !conn.has(el.dataset.id));
+  });
+  cols.classList.toggle('faded', !!selected);
+  colsvg.querySelectorAll('path.edge').forEach(p => p.classList.toggle('hl', !!selected && (p.dataset.s === selected || p.dataset.t === selected)));
+}
+function applySearch() {
+  const q = (document.getElementById('search').value || '').trim().toLowerCase();
+  const test = id => { const n = nodesById[id]; return !!q && (n.label + ' ' + n.gloss).toLowerCase().includes(q); };
+  if (gNodes) gNodes.querySelectorAll('g.node').forEach(g => g.classList.toggle('match', test(g.dataset.id)));
+  colnodes.querySelectorAll('.cnode').forEach(el => el.classList.toggle('match', test(el.dataset.id)));
+}
+function renderPanel() {
+  const panel = document.getElementById('panel');
+  if (!selected) { panel.classList.remove('open'); return; }
+  const n = nodesById[selected]; const ch = chById[n.chapter];
+  const g = groupsById[n.group];
+  const outs = DATA.edges.filter(e => e.s === n.id), ins = DATA.edges.filter(e => e.t === n.id);
+  const rel = (e, other, invert) => {
+    const o = nodesById[other];
+    const lbl = DATA.edgeTypes[e.type].label;
+    return `<a class="rel" data-go="${o.id}"><span class="rt" style="color:var(--e-${e.type})">${invert ? '← ' + lbl : lbl + ' →'}</span>${o.label}</a>`;
+  };
+  const tierName = n.tier === 1 ? 'core' : n.tier === 2 ? 'supporting' : 'detail';
+  panel.style.setProperty('--pc', `var(--ch-${ch.color})`);
+  panel.innerHTML = `
+    <button class="close" id="pclose">✕</button>
+    <div class="chap">${g.label} · ${ch.label}</div>
+    <h2>${n.label}</h2>
+    <div style="margin-bottom:10px"><span class="badge">${n.kind}</span><span class="badge">${tierName}</span><span class="badge">importance ${n.importance}/5</span></div>
+    <div class="gloss">${n.gloss}</div>
+    <div class="app"><strong>Appears in:</strong> ${n.appears.map(c => chById[c] ? chById[c].label : c).join(' · ')}</div>
+    ${outs.length ? `<h4>This concept →</h4>${outs.map(e => rel(e, e.t, false)).join('')}` : ''}
+    ${ins.length ? `<h4>Other concepts → this</h4>${ins.map(e => rel(e, e.s, true)).join('')}` : ''}
+  `;
+  panel.querySelector('#pclose').onclick = () => select(selected);
+  panel.querySelectorAll('[data-go]').forEach(a => {
+    a.onclick = () => {
+      const target = nodesById[a.dataset.go];
+      if (target.tier > tierLevel) {
+        tierLevel = target.tier;
+        rebuild(true);
+        if (viewMode === 'cols') renderCols();
+      }
+      if (selected !== a.dataset.go) select(a.dataset.go);
+      centerOn(a.dataset.go);
+    };
+    // hovering a relation in the panel spotlights that specific edge on the map
+    a.addEventListener('pointerenter', () => hlPair(n.id, a.dataset.go, true));
+    a.addEventListener('pointerleave', () => hlPair(n.id, a.dataset.go, false));
+  });
+  panel.classList.add('open');
+}
+function hlPair(a, b, on) {
+  [gEdges, colsvg].forEach(c => {
+    if (!c) return;
+    c.querySelectorAll('path.edge').forEach(p => {
+      if ((p.dataset.s === a && p.dataset.t === b) || (p.dataset.s === b && p.dataset.t === a)) p.classList.toggle('hhl', on);
+    });
+  });
+}
+function centerOn(id) {
+  const n = nodesById[id]; const r = canvas.getBoundingClientRect();
+  const x = viewMode === 'cols' ? n._cx + n._cw / 2 : n.x;
+  const y = viewMode === 'cols' ? n._cy + n._ch / 2 : n.y;
+  view.x = r.width / 2 - x * view.k; view.y = r.height / 2 - y * view.k; view.apply();
+}
+function fit() {
+  const r = canvas.getBoundingClientRect();
+  const w = viewMode === 'cols' ? cols.offsetWidth : W;
+  const h = viewMode === 'cols' ? cols.offsetHeight : H;
+  view.k = Math.min((r.width - 16) / w, (r.height - 16) / h, 1.2);
+  view.x = (r.width - w * view.k) / 2;
+  view.y = viewMode === 'cols' ? 8 : (r.height - h * view.k) / 2;
+  view.apply();
+}
+function updateButtons() {
+  document.getElementById('btn-t1').classList.toggle('on', tierLevel === 1);
+  document.getElementById('btn-t2').classList.toggle('on', tierLevel === 2);
+  document.getElementById('btn-t3').classList.toggle('on', tierLevel === 3);
+}
+function setTier(t) {
+  tierLevel = t;
+  rebuild(true);
+  if (viewMode === 'cols') { renderCols(); fit(); }
+}
+document.getElementById('btn-t1').onclick = () => setTier(1);
+document.getElementById('btn-t2').onclick = () => setTier(2);
+document.getElementById('btn-t3').onclick = () => setTier(3);
+document.getElementById('btn-view-net').onclick = () => setView('net');
+document.getElementById('btn-view-cols').onclick = () => setView('cols');
+document.getElementById('btn-regen').onclick = () => { sim.reseed(Math.floor(Math.random() * 1e9)); };
+bindThermo(document.getElementById('temp'), document.getElementById('temp-label'), sim);
+document.getElementById('btn-fit').onclick = fit;
+document.getElementById('btn-theme').onclick = () => {
+  const cur = document.documentElement.dataset.theme;
+  document.documentElement.dataset.theme = cur === 'dark' ? 'light' : (cur === 'light' ? 'dark' : (matchMedia('(prefers-color-scheme: dark)').matches ? 'light' : 'dark'));
+};
+document.getElementById('search').oninput = applySearch;
+canvas.addEventListener('click', e => { if (suppressClick) return; if (!e.target.closest('g.node') && !e.target.closest('.cnode') && !e.target.closest('.chapter-head')) { if (selected) select(selected); } });
+
+const lg = document.getElementById('legend');
+lg.innerHTML = `<h3>Chapter where developed</h3>` +
+  DATA.chapters.map(c => `<div class="row"><span class="sw" style="background:var(--ch-${c.color})"></span>${c.label}</div>`).join('') +
+  `<h3>Relations</h3>` +
+  Object.entries(DATA.edgeTypes).map(([t, et]) =>
+    `<div class="row"><svg width="30" height="8"><line x1="0" y1="4" x2="30" y2="4" stroke="var(--e-${t})" stroke-width="2"${et.dash ? ` stroke-dasharray="${et.dash}"` : ''}/></svg>${et.label}</div>`).join('') +
+  `<h3>Reading the nodes</h3><div class="row">Size = importance · solid fill = core, lighter = supporting/detail · dashed ring = pinned</div>`;
+
+rebuild(false);
+setView(viewMode);
+if (!STATIC) requestAnimationFrame(loop);
+</script>
+</body>
+</html>
